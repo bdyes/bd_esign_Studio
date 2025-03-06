@@ -19,20 +19,20 @@
 
     <form id="quote-form" style="display: none;">
         <div id="video-format-question">
-		    <label>영상의 방향을 선택해주세요 :</label>
-		    <br>
-		    <div class="gif-container"> 
-		        <div class="button-wrapper">
-		            <button type="button" class="horizontal" data-value="horizontal" data-price="0" data-label="가로">가로 <span class="price-circle">0</span></button>
-		            <img src="Gifs/Landscape.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		        <div class="button-wrapper">
-		            <button type="button" class="vertical" data-value="vertical" data-price="0" data-label="세로">세로 <span class="price-circle">0</span></button>
-		            <img src="Gifs/Portrait.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		    </div>
-		</div>
-				
+            <label>영상의 방향을 선택해주세요 :</label>
+            <br>
+            <div class="gif-container">
+                <div class="button-wrapper">
+                    <button type="button" class="horizontal" data-value="horizontal" data-price="0" data-label="가로">가로 <span class="price-circle">0</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Landscape.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+                <div class="button-wrapper">
+                    <button type="button" class="vertical" data-value="vertical" data-price="0" data-label="세로">세로 <span class="price-circle">0</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Portrait.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+            </div>
+        </div>
+
         <div id="running-time-question" style="display: none;" class="question-container">
             <label for="running-time">영상의 러닝타임(재생시간) 길이를 선택해주세요 :</label>
             <select id="running-time" size="1">
@@ -51,84 +51,84 @@
             <button type="button" id="running-time-button" style="display: none;"></button>
         </div>
 
-		<div id="shooting-space-question" style="display: none;">
-		    <label>촬영이 필요한 공간을 선택해주세요 (중복선택 가능) :</label><br>
-		    <div class="gif-container">
-		        <div class="button-wrapper space-button-wrapper">  <button type="button" data-space="indoor" data-price="0" data-label="실내">실내 <span class="price-circle">0</span></button>
-		              <img src="Gifs/Interior.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		        <div class="button-wrapper space-button-wrapper">  <button type="button" class="exterior" data-space="outdoor" data-price="3" data-label="실외">실외 <span class="price-circle">3</span></button>
-		            <img src="Gifs/Exterior.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		        <div class="button-wrapper space-button-wrapper">  <button type="button" class="drone" data-space="drone" data-price="5" data-label="항공(드론)">항공(드론) <span class="price-circle">5</span></button>
-		            <img src="Gifs/Drone.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		    </div>
-		    <div id="space-next-button-container">
-		        <button type="button" id="space-next-button" style="display: none;">다음</button>
-		    </div>
-		</div>
-				
+        <div id="shooting-space-question" style="display: none;">
+            <label>촬영이 필요한 공간을 선택해주세요 (중복선택 가능) :</label><br>
+            <div class="gif-container">
+                <div class="button-wrapper space-button-wrapper">  <button type="button" data-space="indoor" data-price="0" data-label="실내">실내 <span class="price-circle">0</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Interior.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+                <div class="button-wrapper space-button-wrapper">  <button type="button" class="exterior" data-space="outdoor" data-price="3" data-label="실외">실외 <span class="price-circle">3</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Exterior.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+                <div class="button-wrapper space-button-wrapper">  <button type="button" class="drone" data-space="drone" data-price="5" data-label="항공(드론)">항공(드론) <span class="price-circle">5</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Drone.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+            </div>
+            <div id="space-next-button-container">
+                <button type="button" id="space-next-button" style="display: none;">다음</button>
+            </div>
+        </div>
+
         <div id="equipment-question" style="display: none;">
-		    <label><span id="equipment-question-location"></span> 영상의 무빙 퀄리티를 선택해주세요 :</label><br>
-		    <div class="equipment-description">
-		        스탠다드: 핸드헬드(카메라를 손으로 들고 무빙)기법으로 영상을 촬영합니다.<br>
-		        디럭스: 고급 짐벌을 사용하여, 보다 부드러운 무빙의 영상이 가능합니다.<br>
-		        프라임: 슬라이더를 사용하여, 최고로 안정적인 무빙의 영상이 가능합니다.<br>
-			<p class="description" id="deluxe">&lt;디럭스&gt; - "스탠다드" 무빙퀄리티를 포함합니다. (+짐벌)</p>
-			<p class="description" id="prime">&lt;프라임&gt; - "모든" 무빙퀄리티를 모두 포함합니다. (+모든장비)</p>
-		    </div>
-				    <div class="gif-container">
-		        <div class="button-wrapper equipment-button-wrapper"> <button type="button" class="standard" data-equipment="standard" data-price="0" data-label="스탠다드">스탠다드 <span class="price-circle">0</span></button>
-		            <img src="Gifs/Standard.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		        <div class="button-wrapper equipment-button-wrapper"> <button type="button" data-equipment="deluxe" data-price="5" data-label="디럭스">디럭스 <span class="price-circle">5</span></button>
-		            <img src="Gifs/Deluxe.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		        <div class="button-wrapper equipment-button-wrapper"> <button type="button" data-equipment="prime" data-price="10" data-label="프라임">프라임 <span class="price-circle">10</span></button>
-		            <img src="Gifs/Prime.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		    </div>
-		</div>
-				
+            <label><span id="equipment-question-location"></span> 영상의 무빙 퀄리티를 선택해주세요 :</label><br>
+            <div class="equipment-description">
+                스탠다드: 핸드헬드(카메라를 손으로 들고 무빙)기법으로 영상을 촬영합니다.<br>
+                디럭스: 고급 짐벌을 사용하여, 보다 부드러운 무빙의 영상이 가능합니다.<br>
+                프라임: 슬라이더를 사용하여, 최고로 안정적인 무빙의 영상이 가능합니다.<br>
+                <p class="description" id="deluxe">&lt;디럭스&gt; - "스탠다드" 무빙퀄리티를 포함합니다. (+짐벌)</p>
+                <p class="description" id="prime">&lt;프라임&gt; - "모든" 무빙퀄리티를 모두 포함합니다. (+모든장비)</p>
+            </div>
+            <div class="gif-container">
+                <div class="button-wrapper equipment-button-wrapper"> <button type="button" class="standard" data-equipment="standard" data-price="0" data-label="스탠다드">스탠다드 <span class="price-circle">0</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Standard.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+                <div class="button-wrapper equipment-button-wrapper"> <button type="button" data-equipment="deluxe" data-price="5" data-label="디럭스">디럭스 <span class="price-circle">5</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Deluxe.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+                <div class="button-wrapper equipment-button-wrapper"> <button type="button" data-equipment="prime" data-price="10" data-label="프라임">프라임 <span class="price-circle">10</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Prime.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+            </div>
+        </div>
+
         <div id="text-effect-question" style="display: none;">
-		    <label>영상에 삽입할 텍스트 효과를 선택해주세요 (중복선택 가능) :</label><br>
-			<p class="description" id="none">자막없음: 텍스트 없이 편집된 컷 클립들로만 영상이 구성됩니다.</p>
-			<p class="description" id="normal">일반자막: 화면 상에 상호 및 부가설명 등 일반적인 텍스트를 삽입합니다.</p>
-			<p class="description" id="spatial">공간효과: 텍스트가 실제 공간에 배치된 듯한 고급편집 작업을 진행합니다.</p>
-		    <div class="gif-container">
-		        <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="none" data-price="0" data-label="자막없음">자막없음 <span class="price-circle">0</span></button>
-		            <img src="Gifs/No-Subtitles.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		        <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="normal" data-price="3" data-label="일반자막">일반자막 <span class="price-circle">3</span></button>
-		            <img src="Gifs/Basic-Subtitles.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		        <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="spatial" data-price="10" data-label="공간효과">공간효과 <span class="price-circle">10</span></button>
-		            <img src="Gifs/Spatial-Subtitles.gif" class="button-gif" style="pointer-events: none;">
-		        </div>
-		    </div>
-		    <div id="text-effect-next-button-container">
-		        <button type="button" id="text-effect-next-button" style="display: none;">다음</button>
-		    </div>
-		</div>
-						
-	  <div id="distance-question" style="display: none;">
-          <label>서울 금천구청으로부터 촬영이 필요한 고객님의 공간까지의<br>
-              이동거리를 입력해주세요 :</label>
-          <p>네비게이션의 경로옵션 중 최단거리 기준,<br>
-              30km 초과시 출장비용 발생 (초과되는 1km당 1,500원)<br>
-          </p>
-          <p2>( EX : 이동거리 50km = 30,000원 추가 )<br>
-          </p2>
-          <div class="input-container">
-              <input type="number" id="distance-input" placeholder="" min="0">
-              <span class="unit">Km</span>
-              <button type="button" id="distance-button">입력</button>
-          </div>
-          <button type="button" id="distance-result-button" style="display: none;">
-              <span id="distance-result-text"></span>
-              <span class="price-circle"></span>
-          </button>
+            <label>영상에 삽입할 텍스트 효과를 선택해주세요 (중복선택 가능) :</label><br>
+            <p class="description" id="none">자막없음: 텍스트 없이 편집된 컷 클립들로만 영상이 구성됩니다.</p>
+            <p class="description" id="normal">일반자막: 화면 상에 상호 및 부가설명 등 일반적인 텍스트를 삽입합니다.</p>
+            <p class="description" id="spatial">공간효과: 텍스트가 실제 공간에 배치된 듯한 고급편집 작업을 진행합니다.</p>
+            <div class="gif-container">
+                <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="none" data-price="0" data-label="자막없음">자막없음 <span class="price-circle">0</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/No-Subtitles.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+                <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="normal" data-price="3" data-label="일반자막">일반자막 <span class="price-circle">3</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Basic-Subtitles.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+                <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="spatial" data-price="10" data-label="공간효과">공간효과 <span class="price-circle">10</span></button>
+                    <img src="https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Spatial-Subtitles.gif" class="button-gif" style="pointer-events: none;">
+                </div>
+            </div>
+            <div id="text-effect-next-button-container">
+                <button type="button" id="text-effect-next-button" style="display: none;">다음</button>
+            </div>
+        </div>
+
+        <div id="distance-question" style="display: none;">
+            <label>서울 금천구청으로부터 촬영이 필요한 고객님의 공간까지의<br>
+                이동거리를 입력해주세요 :</label>
+            <p>네비게이션의 경로옵션 중 최단거리 기준,<br>
+                30km 초과시 출장비용 발생 (초과되는 1km당 1,500원)<br>
+            </p>
+            <p2>( EX : 이동거리 50km = 30,000원 추가 )<br>
+            </p2>
+            <div class="input-container">
+                <input type="number" id="distance-input" placeholder="" min="0">
+                <span class="unit">Km</span>
+                <button type="button" id="distance-button">입력</button>
+            </div>
+            <button type="button" id="distance-result-button" style="display: none;">
+                <span id="distance-result-text"></span>
+                <span class="price-circle"></span>
+            </button>
         </div>
         <div id="final-message" class="question-container" style="display: none;">
             아래의 누적견적바를 눌러 최종 견적을 확인하세요.
@@ -147,13 +147,13 @@
                 </div>
                 <div id="receipt-line"></div>
                 <div id="receipt-items">
-				        <div class="receipt-item">
-				        <span class="item-category">영상 방향</span>
-				        <span class="item-detail">가로</span>
-				        <span class="item-price">0원</span>
-				    </div>
-				</div>
-                <button id="contact-button" class="disabled-button" disabled>선택을 모두 완료해</button>
+                    <div class="receipt-item">
+                        <span class="item-category">영상 방향</span>
+                        <span class="item-detail">가로</span>
+                        <span class="item-price">0원</span>
+                    </div>
+                </div>
+                <button id="contact-button" class="disabled-button" disabled>선택을 모두 완료해</button>
             </div>
         </div>
         <div class="price-text">
@@ -170,34 +170,34 @@
         <button type="button" id="bottom-button" data-type="bottom"><i class="fa-solid fa-arrow-down"></i></button>
     </div>
     <div id="white-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; z-index: 9999;"></div>
-	<div id="overlay" style="display: none;"></div>
-	<div id="receipt-modal" style="display: none;">
-	    <div class="receipt-modal-content">
-	        <div class="receipt-modal-header">
-	            <div class="receipt-title">공간촬영 모의견적 내역</div>
-	        </div>
-	        <div id="receipt-modal-line"></div>
-			<div id="receipt-modal-items">
-	        </div>
-        	<div id="receipt-modal-line2"></div>
-			<div class="receipt-modal-total">
-            	<span class="receipt-modal-total-label">누적견적:</span>
-            	<span id="receipt-modal-total-price" class="receipt-modal-total-price">0원</span>
-        	</div>
-	        <div id="receipt-modal-warning">
-	            <p>
-	                &nbsp; 위 옵션 내용과 견적 금액은 모의로 산출된 내역으로 확정된 의뢰내용이 아니며 상담시 참고자료로 활용됩니다. 상담 내용에 따라 수정 및 변경이 가능하므로 정식 견적서로써의 효력을 갖지 않습니다.</p>
-	        </div>
-	        <div id="receipt-modal-info">
-	            <input type="text" id="modal-name" placeholder="담당자 성함">
-	            <input type="text" id="modal-position" placeholder="직급/직책">
-	            <input type="tel" id="modal-phone" placeholder="휴대폰 번호">
-	            <input type="email" id="modal-email" placeholder="이메일 주소">
-	        </div>
-	        <button id="modal-submit-button">상담신청</button>
-	    </div>
-	</div>
-	
+    <div id="overlay" style="display: none;"></div>
+    <div id="receipt-modal" style="display: none;">
+        <div class="receipt-modal-content">
+            <div class="receipt-modal-header">
+                <div class="receipt-title">공간촬영 모의견적 내역</div>
+            </div>
+            <div id="receipt-modal-line"></div>
+            <div id="receipt-modal-items">
+            </div>
+            <div id="receipt-modal-line2"></div>
+            <div class="receipt-modal-total">
+                <span class="receipt-modal-total-label">누적견적:</span>
+                <span id="receipt-modal-total-price" class="receipt-modal-total-price">0원</span>
+            </div>
+            <div id="receipt-modal-warning">
+                <p>
+                    &nbsp; 위 옵션 내용과 견적 금액은 모의로 산출된 내역으로 확정된 의뢰내용이 아니며 상담시 참고자료로 활용됩니다. 상담 내용에 따라 수정 및 변경이 가능하므로 정식 견적서로써의 효력을 갖지 않습니다.</p>
+            </div>
+            <div id="receipt-modal-info">
+                <input type="text" id="modal-name" placeholder="담당자 성함">
+                <input type="text" id="modal-position" placeholder="직급/직책">
+                <input type="tel" id="modal-phone" placeholder="휴대폰 번호">
+                <input type="email" id="modal-email" placeholder="이메일 주소">
+            </div>
+            <button id="modal-submit-button">상담신청</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
