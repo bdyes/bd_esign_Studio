@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>공간촬영 모의견적 (v8.26)</title>
+    <title>공간촬영 모의견적 (v8.27)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
@@ -13,6 +13,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 </head>
 <body>
+    <div id="loading-overlay" style="display: none;">
+        <div id="loading-progress-bar-container">
+            <div id="loading-progress-bar"></div>
+        </div>
+        <div id="loading-message">페이지를 로딩 중입니다...</div>
+    </div>
+
     <h1 id="title">공간촬영 모의견적</h1>
 
     <button id="start-button">시작하기</button>
