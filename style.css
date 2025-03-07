@@ -622,11 +622,12 @@ input[type="checkbox"] {
     margin-right: 1rem; /* 텍스트와 주황색 원 사이 간격. 필요에 따라 조절 */
 }
 
+/* distance-button 페이드인 효과 */
 #distance-button {
     opacity: 0; /* 초기에는 투명하게 */
     pointer-events: none; /* 초기에는 클릭 이벤트 무시 */
-    animation: fadeIn 1s forwards ease-in-out; /* 1초 동안 페이드인 애니메이션 */
-    animation-delay: 0.5s; /* 0.5초 지연 */
+    animation: fadeIn 1.25s forwards ease-in-out; /* 1초 동안 페이드인 애니메이션 */
+    animation-delay: 0.75s; /* 0.5초 지연 */
 }
 
 @keyframes fadeIn {
@@ -1383,25 +1384,6 @@ body.overlay-active {
     margin-top: 20px;
     font-size: 1.2em;
     color: #333;
-}
-/* distance-button 페이드인 효과 */
-#distance-button {
-    /* ... (기존 스타일) ... */
-    opacity: 0; /* 초기에는 투명하게 */
-    animation: fadeIn 1s forwards; /* 1초 동안 페이드인 애니메이션 */
-    animation-delay: 2s; /* 2초 지연 */
-    pointer-events: none; /* 초기에는 클릭 이벤트 무시 */
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        pointer-events: none; /* 애니메이션 시작 시에도 클릭 무시 */
-    }
-    to {
-        opacity: 1;
-        pointer-events: auto; /* 애니메이션 끝날 때 클릭 허용 */
-    }
 }
 
 /* ----------------------------------------- Loading Overlay ----------------------------------------- */
