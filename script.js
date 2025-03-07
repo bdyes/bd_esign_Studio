@@ -86,6 +86,7 @@ function checkAllQuestionsAnswered() {
 
 
 
+
     if (!videoFormatSelected) return false;
 
     // 2. 러닝타임 선택 확인
@@ -211,6 +212,7 @@ function runIntroAnimation() {
     .add({
         targets: 'html, body',
         scrollTop: [document.body.scrollHeight, 0],
+
         duration: 500,
         easing: 'easeInOutSine'
     }, 0)
@@ -236,9 +238,23 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
     const progressBar = document.getElementById('loading-progress-bar');
     const loadingMessage = document.getElementById('loading-message');
 
+    // 1. 스피너 컨테이너 요소 생성
+    const spinnerContainer = document.createElement('span');
+    spinnerContainer.classList.add('spinner-container');
+
+    // 2. 스피너 SVG 코드를 spinnerContainer에 추가
+    spinnerContainer.innerHTML = `
+        <svg class="spinner" viewBox="0 0 50 50">
+            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+        </svg>
+    `;
+
+    // 3. loadingMessage의 '...' 텍스트 *뒤에* spinnerContainer 추가
+    loadingMessage.append(spinnerContainer); // appendChild 대신 append 사용
+    
     loadingOverlay.style.display = 'flex'; // 로딩 오버레이 즉시 표시
 
-    const gifUrls = [
+     const gifUrls = [
         "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Landscape.gif",
         "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Portrait.gif",
         "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Interior.gif",
@@ -252,66 +268,72 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
         "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Spatial-Subtitles.gif"
     ];
     let loadedImages = 0;
-    let fakeProgress = 0; // 가짜 진행률 변수
+    let fakeProgress = 0;
     let fakeProgressInterval;
+    let dotsInterval; // 점 애니메이션 interval 변수 추가
 
-    // 가짜 진행률 애니메이션 시작
+    // 점 애니메이션 시작 (스피너와는 별개)
+    let dots = "";
+    dotsInterval = setInterval(() => { //setInterval 사용
+        dots += ".";
+        if(dots.length > 3) {
+          dots = "";
+        }
+        loadingMessage.firstChild.textContent = `로직 데이터를 로드 중입니다${dots}`; // textContent 사용
+
+    }, 500);
+
+
     fakeProgressInterval = setInterval(() => {
-        fakeProgress += 5; // 주기적으로 진행률 증가
-        if (fakeProgress > 50) { // 50% 이상은 증가 안함
+        fakeProgress += 5;
+        if (fakeProgress > 50) {
             fakeProgress = 50;
         }
         progressBar.style.width = `${fakeProgress}%`;
-
-         // 로딩 메시지 업데이트 (선택 사항 - 더 동적인 느낌)
-        const dots = ".".repeat(fakeProgress % 4); // 점 개수 변경 (0~3개)
-        loadingMessage.textContent = `로직 데이터를 로드 중입니다${dots}`;
-
-    }, 1000); // 1500ms마다 증가
+    }, 1000); // 1000ms마다 증가
 
     function loadImage(url) {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = () => {
                 loadedImages++;
-                // *실제* 이미지 로딩이 완료되면, 가짜 진행률은 중지.
                 if (loadedImages === gifUrls.length) {
-                    clearInterval(fakeProgressInterval); // 가짜 애니메이션 중지
-                }
-                const progress = (loadedImages / gifUrls.length) * 100;
-                progressBar.style.width = `${progress}%`; // *실제* 진행률 표시
-                resolve();
-            };
-            img.onerror = () => { // onerror 에서도 동일하게 처리
-                loadedImages++;
-                if (loadedImages === gifUrls.length) {
-                  clearInterval(fakeProgressInterval);
+                    clearInterval(fakeProgressInterval);
+                    clearInterval(dotsInterval); // 점 애니메이션도 중지
                 }
                 const progress = (loadedImages / gifUrls.length) * 100;
                 progressBar.style.width = `${progress}%`;
-                resolve(); // 여전히 resolve
+                resolve();
+            };
+           img.onerror = () => {
+              loadedImages++; // 에러가 나도 이미지는 로드된걸로 간주
+              if (loadedImages === gifUrls.length) {
+                  clearInterval(fakeProgressInterval);
+                  clearInterval(dotsInterval); // 점 애니메이션 중지
+              }
+              const progress = (loadedImages / gifUrls.length) * 100;
+              progressBar.style.width = `${progress}%`;
+              resolve();  //reject(new Error(`Failed to load image: ${url}`)); // Promise 실패
             };
             img.src = url;
         });
     }
 
     Promise.all(gifUrls.map(url => loadImage(url)))
-        .then(() => {
-            loadingMessage.textContent = "로딩 완료!";
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-                runIntroAnimation();
-            }, 500);
-        })
-        .catch(error => {
-          loadingMessage.textContent = "일부 이미지를 로드하지 못했습니다.";
-          console.error(error); // 6. 이미지 로드 에러 상세 정보 확인
-          setTimeout(() => {
-              loadingOverlay.style.display = 'none';
-              runIntroAnimation();
-            }, 500);
-
-        });
+    .then(() => {
+        // loadingMessage.textContent = "로딩 완료!";  // 텍스트 변경 X
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+            runIntroAnimation();
+        }, 500);
+    })
+    .catch(error => {
+        console.error(error);
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+            runIntroAnimation();
+        }, 500);
+    });
 
 
     // price-bar 클릭 막기
@@ -676,6 +698,7 @@ function handleRunningTimeButtonClick() {
 // handleSpaceButtonClick 함수 (수정)
 function handleSpaceButtonClick(event) {
   const button = event.currentTarget;
+
 
   // 클릭된 버튼이 spaceNextButton인지 확인
   if (button.id !== 'space-next-button') {
