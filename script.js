@@ -1568,7 +1568,7 @@ const contactButtonObserver = new MutationObserver(() => {
 // 문의하기 버튼의 속성 변화를 감지
 contactButtonObserver.observe(contactButton, { attributes: true, attributeFilter: ['disabled'] });
 
-const webhookURL = "https://discord.com/api/webhooks/1345235600508325898/lRU3QoGl1PYFOe_hYOE3wYMlKtVSC_0QugYuSKibDqvnqS5pC8GYDq_RvzpikcS_WjxR";
+const webhookURL = "https://discord.com/api/webhooks/1347457847579119667/ZhMnuB_GQtH_1duycdaUixTLfrJDVpAMxqBTzjsQn1i7iK6P3UWdXWjrj2nXaW02uOKV";
 
 // "상담신청" 버튼 가져오기
 const consultationButton = document.getElementById("modal-submit-button");
