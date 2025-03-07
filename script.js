@@ -80,13 +80,6 @@ function updateTextEffectNextButtonState() {
 function checkAllQuestionsAnswered() {
     // 1. 영상 방향 선택 확인
     const videoFormatSelected = document.querySelector('#video-format-question button.selected');
-
-
-
-
-
-
-
     if (!videoFormatSelected) return false;
 
     // 2. 러닝타임 선택 확인
@@ -255,17 +248,17 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
     loadingOverlay.style.display = 'flex'; // 로딩 오버레이 즉시 표시
 
      const gifUrls = [
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Landscape.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Portrait.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Interior.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Exterior.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Drone.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Standard.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Deluxe.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Prime.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/No-Subtitles.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Basic-Subtitles.gif",
-        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Spatial-Subtitles.gif"
+        "https://i.imgur.com/9Tn72uu.gif", // Landscape
+        "https://i.imgur.com/MGeoNWd.gif", // Portrait
+        "https://i.imgur.com/TRX39P1.gif", // Interior
+        "https://i.imgur.com/2r5GlPr.gif", // Exterior
+        "https://i.imgur.com/b858w9R.gif", // Drone
+        "https://i.imgur.com/3kjLw6s.gif", // Standard
+        "https://i.imgur.com/nrdMWRR.gif", // Deluxe
+        "https://i.imgur.com/dTM3bb9.gif", // Prime
+        "https://i.imgur.com/NxR4zQF.gif", // No-Subtitles
+        "https://i.imgur.com/9LpNmrY.gif", // Basic-Subtitles
+        "https://i.imgur.com/I7Myh0x.gif" // Spatial-Subtitles
     ];
     let loadedImages = 0;
     let fakeProgress = 0;
