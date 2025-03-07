@@ -625,7 +625,7 @@ input[type="checkbox"] {
 #distance-button {
     opacity: 0; /* 초기에는 투명하게 */
     pointer-events: none; /* 초기에는 클릭 이벤트 무시 */
-    animation: fadeIn 1.25s forwards ease-in; /* 1.25초 동안 페이드인 애니메이션 */
+    animation: fadeIn 1s forwards ease-in-out; /* 1초 동안 페이드인 애니메이션 */
     animation-delay: 0.5s; /* 0.5초 지연 */
 }
 
