@@ -1365,25 +1365,73 @@ body.overlay-active {
 
 #loading-progress-bar-container {
     width: 80%; /* 진행바 컨테이너 너비 */
-    max-width: 400px; /* 최대 너비 제한 */
-    height: 20px;
+    max-width: 20rem; /* 최대 너비 제한 */
+    height: 1rem;
     background-color: #ddd; /* 진행바 배경색 */
-    border-radius: 10px; /* 둥근 모서리 */
+    border-radius: 1rem; /* 둥근 모서리 */
     overflow: hidden; /* 내부 진행바가 밖으로 나가지 않도록 */
 }
 
 #loading-progress-bar {
     height: 100%;
     width: 0; /* 초기 너비는 0 */
-    background-color: #056dfc; /* 진행바 색상 */
-    border-radius: 10px;
-    transition: width 0.2s ease; /* 부드러운 너비 변화 */
+    background-color: #1A74FF; /* 진행바 색상 */
+    border-radius: 10rem;
+    transition: width 1s ease-in-out; /* 부드러운 너비 변화 */
 }
 
 #loading-message {
-    margin-top: 20px;
-    font-size: 1.2em;
+    opacity: 0.8;
+    margin-top: 0.75rem;
+    margin-left: 2rem;
+    font-size: 1.2rem;
     color: #333;
+    display: flex; /* Flex 컨테이너로 설정 */
+    justify-content: space-between; /* 텍스트는 왼쪽, 스피너는 오른쪽에 배치 */
+    align-items: center; /* 세로 중앙 정렬 */
+    width: 80%;       /* 너비 설정 (필요에 따라 조정) */
+    max-width: 20rem;  /* 최대 너비 (필요에 따라 조정) */
+}
+
+/* 스피너 컨테이너.  #loading-message 바로 아래에 추가. */
+.spinner-container {
+    margin-right: 2rem;
+    display: inline-block; /* 인라인 블록으로 배치 */
+    vertical-align: middle; /* 텍스트와 세로 중앙 정렬 */
+}
+
+/* 스피너 스타일 (이전과 동일) */
+.spinner {
+    width: 2rem;
+    height: 2rem;
+    animation: rotate 2s linear infinite;
+}
+
+.spinner .path {
+    stroke: #FFBE00;
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 200;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 89, 200;
+        stroke-dashoffset: -35px;
+    }
+    100% {
+        stroke-dasharray: 89, 200;
+        stroke-dashoffset: -124px;
+    }
 }
 
 /* ----------------------------------------- Loading Overlay ----------------------------------------- */
