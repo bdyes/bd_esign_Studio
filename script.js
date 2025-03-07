@@ -85,6 +85,7 @@ function checkAllQuestionsAnswered() {
 
 
 
+
     if (!videoFormatSelected) return false;
 
     // 2. 러닝타임 선택 확인
@@ -230,8 +231,88 @@ function runIntroAnimation() {
 }
 
 // 페이지 로드 시 애니메이션 실행 + 이벤트 리스너 등록
-window.addEventListener('load', () => {
-    runIntroAnimation();
+document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용!
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const progressBar = document.getElementById('loading-progress-bar');
+    const loadingMessage = document.getElementById('loading-message');
+
+    loadingOverlay.style.display = 'flex'; // 로딩 오버레이 즉시 표시
+
+    const gifUrls = [
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Landscape.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Portrait.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Interior.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Exterior.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Drone.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Standard.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Deluxe.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Prime.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/No-Subtitles.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Basic-Subtitles.gif",
+        "https://github.com/bdyes/bd_esign_Studio/releases/download/Gifs/Spatial-Subtitles.gif"
+    ];
+    let loadedImages = 0;
+    let fakeProgress = 0; // 가짜 진행률 변수
+    let fakeProgressInterval;
+
+    // 가짜 진행률 애니메이션 시작
+    fakeProgressInterval = setInterval(() => {
+        fakeProgress += 5; // 주기적으로 진행률 증가
+        if (fakeProgress > 50) { // 50% 이상은 증가 안함
+            fakeProgress = 50;
+        }
+        progressBar.style.width = `${fakeProgress}%`;
+
+         // 로딩 메시지 업데이트 (선택 사항 - 더 동적인 느낌)
+        const dots = ".".repeat(fakeProgress % 4); // 점 개수 변경 (0~3개)
+        loadingMessage.textContent = `로직 데이터를 로드 중입니다${dots}`;
+
+    }, 1000); // 1500ms마다 증가
+
+    function loadImage(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                loadedImages++;
+                // *실제* 이미지 로딩이 완료되면, 가짜 진행률은 중지.
+                if (loadedImages === gifUrls.length) {
+                    clearInterval(fakeProgressInterval); // 가짜 애니메이션 중지
+                }
+                const progress = (loadedImages / gifUrls.length) * 100;
+                progressBar.style.width = `${progress}%`; // *실제* 진행률 표시
+                resolve();
+            };
+            img.onerror = () => { // onerror 에서도 동일하게 처리
+                loadedImages++;
+                if (loadedImages === gifUrls.length) {
+                  clearInterval(fakeProgressInterval);
+                }
+                const progress = (loadedImages / gifUrls.length) * 100;
+                progressBar.style.width = `${progress}%`;
+                resolve(); // 여전히 resolve
+            };
+            img.src = url;
+        });
+    }
+
+    Promise.all(gifUrls.map(url => loadImage(url)))
+        .then(() => {
+            loadingMessage.textContent = "로딩 완료!";
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+                runIntroAnimation();
+            }, 500);
+        })
+        .catch(error => {
+          loadingMessage.textContent = "일부 이미지를 로드하지 못했습니다.";
+          console.error(error); // 6. 이미지 로드 에러 상세 정보 확인
+          setTimeout(() => {
+              loadingOverlay.style.display = 'none';
+              runIntroAnimation();
+            }, 500);
+
+        });
+
 
     // price-bar 클릭 막기
     priceBar.style.pointerEvents = 'none';
