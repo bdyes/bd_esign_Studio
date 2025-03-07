@@ -1374,7 +1374,7 @@ body.overlay-active {
 #loading-progress-bar {
     height: 100%;
     width: 0; /* 초기 너비는 0 */
-    background-color: #0747d7; /* 진행바 색상 */
+    background-color: #056dfc; /* 진행바 색상 */
     border-radius: 10px;
     transition: width 0.2s ease; /* 부드러운 너비 변화 */
 }
