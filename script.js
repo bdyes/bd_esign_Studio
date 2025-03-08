@@ -574,33 +574,6 @@ function resetToStartScreen() {
 function handleStartButtonClick() {
     startButton.style.display = 'none';
     form.style.display = 'block';
-
-    // ✅ 애니메이션이 다시 적용되도록 requestAnimationFrame을 사용하여 강제 리렌더링
-    requestAnimationFrame(() => {
-        form.classList.add('show'); // form에 다시 애니메이션 적용
-    });
-
-    localStorage.removeItem('selectedVideoFormat');
-    videoFormatButtons.forEach(b => b.classList.remove('selected'));
-    runningTimeSelect.selectedIndex = 0;
-    runningTimeButton.style.display = 'none';
-    runningTimeSelect.style.display = '';
-    resultDiv.textContent = '';
-
-    // 질문 div들을 모두 숨김 (초기화)
-    runningTimeQuestion.style.display = 'none';
-    shootingSpaceQuestion.style.display = 'none';
-    equipmentQuestion.style.display = 'none';
-    textEffectQuestion.style.display = 'none';
-
-    updateTotalPrice();
-    updateContactButtonState();
-}
-
-// 이벤트 핸들러 함수들
-function handleStartButtonClick() {
-    startButton.style.display = 'none';
-    form.style.display = 'block';
     requestAnimationFrame(() => form.classList.add('show'));
 
     localStorage.removeItem('selectedVideoFormat');
@@ -619,6 +592,16 @@ function handleStartButtonClick() {
     equipmentQuestion.classList.remove('question-container', 'show');
     textEffectQuestion.style.display = 'none';
     textEffectQuestion.classList.remove('question-container', 'show');
+
+    // 스크롤 애니메이션 추가 (수정된 부분)
+    const scrollOffset = 10 * parseFloat(getComputedStyle(document.documentElement).fontSize); // 5rem을 px로 변환
+
+    anime({
+        targets: 'html, body',
+        scrollTop: `+=${scrollOffset}`, // 현재 위치에서 scrollOffset만큼 아래로
+        duration: 800,
+        easing: 'easeInOutCubic'
+    });
 
     updateTotalPrice();
     updateContactButtonState(); // 추가
@@ -891,47 +874,59 @@ function showQuestionWithAnimation(questionElement) {
   
 // distanceButton에 대한 클릭 이벤트 리스너 (수정)
 distanceButton.addEventListener('click', () => {
-    if (distanceInput.value === '' || isNaN(distanceInput.value) || distanceInput.value < 0) {
-        alert('올바른 거리를 입력해주세요.');
-        distanceInput.focus();
-        return;
-    }
+  if (distanceInput.value === '' || isNaN(distanceInput.value) || distanceInput.value < 0) {
+    alert('올바른 거리를 입력해주세요.');
+    distanceInput.focus();
+    return;
+  }
 
-    const distance = parseInt(distanceInput.value, 10);
-    const extraCost = Math.max(0, distance - 30) * 1500; 
-    let extraCostInTenThousands = extraCost / 10000; // toFixed()를 적용하지 않음
+  const distance = parseInt(distanceInput.value, 10);
+  let extraCost = 0;
+  let extraCostInTenThousands = 0;
 
-    if (extraCostInTenThousands === Math.floor(extraCostInTenThousands)) {
-        // 정수 부분만 있는 경우 (소수점이 없는 경우)
-        extraCostInTenThousands = extraCostInTenThousands.toFixed(0);
+  if (distance > 30) {
+    if (distance <= 100) {
+      extraCost = (distance - 30) * 1500;
     } else {
-        // 소수점이 있는 경우
-        extraCostInTenThousands = extraCostInTenThousands.toFixed(2); // 일단 소수점 둘째자리까지
-        if (extraCostInTenThousands.endsWith(".00")) {
-            extraCostInTenThousands = extraCostInTenThousands.slice(0, -3); // .00 제거
-        } else if (extraCostInTenThousands.endsWith("0")) {
-            extraCostInTenThousands = extraCostInTenThousands.slice(0, -1);  // 마지막 0 제거
-        }
+      extraCost = (70 * 1500) + ((distance - 100) * 800);
     }
 
-    distanceInput.style.display = 'none';
-    document.querySelector('#distance-question .unit').style.display = 'none';
-    distanceButton.style.display = 'none';
+    extraCostInTenThousands = extraCost / 10000; // toFixed()를 적용하지 않음
 
-    distanceResultText.textContent = `${distance}Km`;
-    distanceResultButton.querySelector('.price-circle').textContent = extraCostInTenThousands;
-    distanceResultButton.style.display = 'block';
+    // extraCostInTenThousands 값 후처리 로직 (기존 로직)
+    if (extraCostInTenThousands === Math.floor(extraCostInTenThousands)) {
+      // 정수 부분만 있는 경우 (소수점이 없는 경우)
+      extraCostInTenThousands = extraCostInTenThousands.toFixed(0);
+    } else {
+      // 소수점이 있는 경우
+      extraCostInTenThousands = extraCostInTenThousands.toFixed(2); // 일단 소수점 둘째자리까지
+      if (extraCostInTenThousands.endsWith(".00")) {
+        extraCostInTenThousands = extraCostInTenThousands.slice(0, -3); // .00 제거
+      } else if (extraCostInTenThousands.endsWith("0")) {
+        extraCostInTenThousands = extraCostInTenThousands.slice(0, -1);  // 마지막 0 제거
+      }
+    }
+  }
 
-    anime({
-        targets: distanceResultButton,
-        opacity: [0, 1],
-        duration: 600,
-        easing: 'easeInOutExpo',
-    });
 
-    isDistanceEntered = true; // 입력 완료 상태 저장
-    updateTotalPrice();
-    updateContactButtonState(); // 수정된 함수 반영
+  distanceInput.style.display = 'none';
+  document.querySelector('#distance-question .unit').style.display = 'none';
+  distanceButton.style.display = 'none';
+
+  distanceResultText.textContent = `${distance}Km`;
+  distanceResultButton.querySelector('.price-circle').textContent = extraCostInTenThousands;
+  distanceResultButton.style.display = 'block';
+
+  anime({
+    targets: distanceResultButton,
+    opacity: [0, 1],
+    duration: 600,
+    easing: 'easeInOutExpo',
+  });
+
+  isDistanceEntered = true; // 입력 완료 상태 저장
+  updateTotalPrice();
+  updateContactButtonState(); // 수정된 함수 반영
 });
 
 // distanceResultButton에 대한 클릭 이벤트 리스너 (수정)
@@ -1046,19 +1041,27 @@ function updateReceipt() {
     }
   });
 
-    // 6. 이동 거리 및 추가 비용1 (수정된 부분)
-    if (isDistanceEntered) { // isDistanceEntered가 true일 때만 추가
-        const distance = parseInt(distanceInput.value, 10) || 0;
-        if (distance > 30) {
-            const extraDistance = distance - 30;
-            const extraCost = extraDistance * 1500;
-            addReceiptItem("이동 거리", `${distance}km (+${extraDistance}km)`, `${extraCost.toLocaleString('ko-KR')}원`);
-        }
-        else if (distance <= 30 && distance > 0){
-            addReceiptItem("이동 거리", `${distance}km`, `0원`);
-        }
-    }
+  // 6. 이동 거리 및 추가 비용 (수정된 부분)
+  if (isDistanceEntered) {
+    const distance = parseInt(distanceInput.value, 10) || 0;
+    if (distance > 30) {
+        let extraDistanceDetail = "";
+        let extraCost = 0;
 
+        if(distance <= 100){
+          extraDistanceDetail = `(+${distance - 30}km)`;
+          extraCost = (distance - 30) * 1500;
+        } else {
+          extraDistanceDetail = `(+70km, +${distance - 100}km)`; //30km초과 100km이하, 100km초과 거리 표시
+          extraCost = (70 * 1500) + ((distance - 100) * 800);
+        }
+
+        addReceiptItem("이동 거리", `${distance}km ${extraDistanceDetail}`, `${extraCost.toLocaleString('ko-KR')}원`);
+
+    } else if (distance <= 30 && distance > 0) {
+      addReceiptItem("이동 거리", `${distance}km`, `0원`);
+    }
+  }
 
   // 그룹별 항목 표시 (기존 코드)
   for (const category in categoryGroups) {
@@ -1115,11 +1118,20 @@ function updateTotalPrice() {
     totalPrice += parseInt(button.dataset.price, 10) || 0;
   });
 
-  // 이동 거리 추가 비용 계산 (isDistanceEntered === true 일 때만)
-  if (isDistanceEntered) { // 변경된 조건
+  // 이동 거리 추가 비용 계산 (수정된 부분)
+  if (isDistanceEntered) {
     const distance = parseInt(distanceInput.value, 10) || 0;
+
     if (distance > 30) {
-      totalPrice += (distance - 30) * 0.15;
+      let extraCost = 0;
+      if (distance <= 100) {
+        // 30km 초과, 100km 이하: km당 1500원
+        extraCost = (distance - 30) * 1500;
+      } else {
+        // 100km 초과: 30~100km 구간 + 100km 초과 구간
+        extraCost = (70 * 1500) + ((distance - 100) * 800);
+      }
+      totalPrice += extraCost / 10000; // 만원 단위로 변환하여 더함
     }
   }
 
@@ -1355,15 +1367,25 @@ function updateReceiptModal() {
 		}
 	});
 
-    // 6. 이동 거리 및 추가 비용2
-    const distance = parseInt(distanceInput.value, 10) || 0;
-    if (distance > 30) {
-        const extraDistance = distance - 30;
-        const extraCost = extraDistance * 1500;
-        addReceiptItem("이동 거리", `${distance}km (+${extraDistance}km)`, `${extraCost.toLocaleString('ko-KR')}원`);
-    }
-    else if (distance <= 30 && distance > 0){
-        addReceiptItem("이동 거리", `${distance}km`, `0원`);
+    // 6. 이동 거리 및 추가 비용 (수정된 부분)
+    if (isDistanceEntered) {
+        const distance = parseInt(distanceInput.value, 10) || 0;
+        if (distance > 30) {
+            let extraDistanceDetail = "";
+            let extraCost = 0;
+            if(distance <= 100){
+                extraDistanceDetail = `(+${distance - 30}km)`;
+                extraCost = (distance - 30) * 1500;
+            }
+            else{
+                extraDistanceDetail = `(+70km, +${distance - 100}km)`; //30km초과 100km이하, 100km초과 거리 표시
+                extraCost = (70 * 1500) + ((distance - 100) * 800);
+            }
+            addReceiptItem("이동 거리", `${distance}km ${extraDistanceDetail}`, `${extraCost.toLocaleString('ko-KR')}원`);
+        }
+        else if (distance <= 30 && distance > 0){
+            addReceiptItem("이동 거리", `${distance}km`, `0원`);
+        }
     }
 
     // 그룹별 항목 표시
