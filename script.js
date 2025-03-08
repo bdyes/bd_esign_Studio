@@ -80,6 +80,8 @@ function updateTextEffectNextButtonState() {
 function checkAllQuestionsAnswered() {
     // 1. 영상 방향 선택 확인
     const videoFormatSelected = document.querySelector('#video-format-question button.selected');
+
+
     if (!videoFormatSelected) return false;
 
     // 2. 러닝타임 선택 확인
@@ -681,6 +683,8 @@ function handleRunningTimeButtonClick() {
 
     // updateTotalPrice();  // <-- 임시로 주석 처리 또는 제거
     runningTimeSelect.size = runningTimeSelect.options.length;
+
+
 
     updateContactButtonState(); // 추가
 }
@@ -1574,6 +1578,7 @@ if (consultationButton) {
         const position = document.getElementById("modal-position").value;
         const phone = document.getElementById("modal-phone").value;
         const email = document.getElementById("modal-email").value;
+        const notes = document.getElementById("modal-notes").value.trim(); // 추가된 부분
 
         if (!name || !position || !phone || !email) {
             alert("⚠️ 정보를 모두 입력해주세요.");
@@ -1611,6 +1616,15 @@ if (consultationButton) {
             }]
         };
 
+        // 사용자가 추가 내용을 입력했을 경우에만 웹훅 메시지에 포함
+        if (notes !== "") {
+            payload.embeds[0].fields.push({
+                name: "📝 추가 전달내용 및 특이사항",
+                value: notes,
+                inline: false
+            });
+        }
+
         // fetch API를 이용하여 디스코드로 전송
         fetch(webhookURL, {
             method: "POST",
@@ -1627,14 +1641,14 @@ if (consultationButton) {
             alert("❌ 상담 신청 중 오류가 발생했습니다.");
         });
     });
-	
-	// ✅ 터치 시 즉시 실행되도록 `touchstart` 이벤트 추가 (기존 기능 유지)
+    
+    // ✅ 터치 시 즉시 실행되도록 `touchstart` 이벤트 추가 (기존 기능 유지)
     consultationButton.addEventListener("touchstart", (event) => {
         event.preventDefault(); // 자동으로 발생하는 click 이벤트 방지
         consultationButton.click(); // 클릭 이벤트 강제 실행
     }, { passive: false });
-	
-	    // ✅ 마우스 버튼을 누르는 순간 즉시 실행되도록 `mousedown` 이벤트 추가
+    
+    // ✅ 마우스 버튼을 누르는 순간 즉시 실행되도록 `mousedown` 이벤트 추가
     consultationButton.addEventListener("mousedown", (event) => {
         event.preventDefault(); // 자동으로 발생하는 click 이벤트 방지
         consultationButton.click(); // 클릭 이벤트 강제 실행
