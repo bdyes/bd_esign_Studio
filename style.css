@@ -189,6 +189,11 @@ input[type="checkbox"] {
   margin-bottom: 0.625rem;
 }
 
+#format.description {
+    margin-top: -1rem;
+    margin-bottom: 1.7rem;
+}
+
 #video-format-question button {
   font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
   font-weight: 700; /* 또는  normal;  기본값 */
@@ -446,6 +451,7 @@ input[type="checkbox"] {
 
 #text-effect-question label {
     margin-bottom: 0;
+    line-height: 1.6rem;
 }
 
 .description {
@@ -1044,14 +1050,14 @@ body {
 
 /* 안내 문구 */
 #receipt-modal-warning {
-  font-size: 0.7rem;
-  color: #919191;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
+    font-size: 0.7rem;
+    color: #919191;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
 	margin-left: 1.5rem;
 	margin-right: 1.5rem;
-  line-height: 1.5;
-  text-align: justify;
+    line-height: 1.5;
+    text-align: justify;
 }
 
 #receipt-modal-warning p {
@@ -1059,9 +1065,45 @@ body {
 	margin-bottom: 1rem;
 }
 
+#modal-name,
+#modal-position,
+#modal-phone,
+#modal-email {
+    height: 2.5rem;
+    margin-bottom: -0.1rem;
+    border-radius: 0.5rem !important;
+}
+
+#modal-notes {
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 500;
+    padding-left: 0.8rem !important;
+    color: #FFFFFF !important;
+    width: 100%;
+    min-height: 5rem;
+    height: auto;
+    margin-top: 0.1rem !important;
+    border-radius: 0.5rem;
+    border: 1px solid #4d4d4d;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    box-sizing: content-box;
+    background-color: #4d4d4d;
+    resize: none;  /* 사용자가 크기 조절 못 하게 고정 */
+}
+
+#modal-notes::placeholder {  /* #modal-notes 전용 placeholder 스타일 */
+  color: #B9B9B9 !important;
+}
+
+#modal-notes, #receipt-modal-info, #receipt-modal {
+    overflow: auto; /* 또는 overflow-y: auto; */
+}
+
 /* 입력 필드 컨테이너 */
 #receipt-modal-info {
 	/* display: grid;  <-- 이 부분 삭제 */
+    height: auto;
 	gap: 0.4rem;
 	padding-left: 1.5rem;
 	padding-right: 1.5rem;
@@ -1069,39 +1111,44 @@ body {
 	display: flex; /* 가로 배치 */
 	flex-wrap: wrap; /* 넘치면 줄바꿈 */
 	justify-content: space-between; /* 양쪽 정렬 */
-	margin-bottom: 1rem;
 }
 
 /* 입력 필드 스타일 */
 #receipt-modal-info input[type="text"] {
-  width: calc(50% - 0.2rem); /* 2열로 배치, 간격 고려 */
-  padding: 0.8rem;
-  border: 1px solid #4d4d4d;
-  border-radius: 5px;
-  background-color: #4d4d4d;
-  color: white;
-  font-size: 0.9rem;
-  box-sizing: border-box; /* 추가: padding, border가 width에 포함되도록 */
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 500;
+    width: calc(50% - 0.2rem); /* 2열로 배치, 간격 고려 */
+    padding: 0.8rem;
+    border: 1px solid #4d4d4d;
+    border-radius: 0.4rem;
+    background-color: #4d4d4d;
+    color: white;
+    font-size: 0.95rem;
+    box-sizing: border-box; /* 추가: padding, border가 width에 포함되도록 */
 }
 
 #receipt-modal-info input[type="tel"],
 #receipt-modal-info input[type="email"] {
-  /* width: 94.2%; */ /* 이 부분은 삭제하거나 주석처리 */
-  width: 100%; /* 수정: 컨테이너에 꽉 차도록 */
-  padding: 0.8rem;
-  border: 1px solid #4d4d4d;
-  border-radius: 5px;
-  background-color: #4d4d4d;
-  color: white;
-  font-size: 0.9rem;
-  box-sizing: border-box; /* 추가: padding, border가 width에 포함되도록 */
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 500;
+    /* width: 94.2%; */ /* 이 부분은 삭제하거나 주석처리 */
+    width: 100%; /* 수정: 컨테이너에 꽉 차도록 */
+    padding: 0.8rem;
+    border: 1px solid #4d4d4d;
+    border-radius: 0.4rem;
+    background-color: #4d4d4d;
+    color: white;
+    font-size: 0.95rem;
+    box-sizing: border-box; /* 추가: padding, border가 width에 포함되도록 */
 }
 
 /* placeholder 스타일 */
 #receipt-modal-info input::placeholder {
-    color: #bdbdbd;
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 500;
+    color: #DDDDDD !important;
+    font-size: 0.9rem;
 }
-
 
 /* 상담신청 버튼 */
 #modal-submit-button {
