@@ -526,7 +526,11 @@ input[type="checkbox"] {
     width: 5rem;
     margin-right: 0.5rem;
     text-align: right;
-    padding-right: 0.7rem;
+    font-size: 1.2rem;
+    color: #ffffff !important;
+    padding-right: 0.6rem;
+    background: #7A7A7A;
+    border-radius: 0.5rem;
 }
 
 /* Km 텍스트 스타일 */
@@ -542,7 +546,7 @@ input[type="checkbox"] {
     margin-top: 1.8rem;
     margin-bottom: 0rem;
     font-size: 0.85rem;
-    color: #777777;
+    color: #555555;
 	margin-left: 0rem;
     line-height: 1.3rem;
 }
@@ -554,6 +558,17 @@ input[type="checkbox"] {
 	opacity: 0.8;
 	font-size: 0.8rem;
 	margin-left: 0.8rem;
+    line-height: -1rem;
+}
+
+#distance-question p3 {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 500;
+	color: #777777;
+	opacity: 0.8;
+	font-size: 0.8rem;
+    margin-left: 0.8rem;
+    margin-top: 10rem !important;
 }
 
 /* 입력 필드와 버튼을 가로로 배치 */
