@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>공간촬영 모의견적 (v8.291)</title>
+    <title>공간촬영 모의견적 (v8.293)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
@@ -26,8 +26,8 @@
 
     <form id="quote-form" style="display: none;">
         <div id="video-format-question">
-            <label>영상의 방향을 선택해주세요 :</label>
-            <br>
+            <label>어느 방향의 영상을 제작하기 원하시나요?</label><br>
+            <p class="description" id="format">(영상을 누르면 크게 볼 수 있으며랙, 다시 누르면 작아집니다.)</p>
             <div class="gif-container">
                 <div class="button-wrapper">
                     <button type="button" class="horizontal" data-value="horizontal" data-price="0" data-label="가로">가로 <span class="price-circle">0</span></button>
@@ -41,7 +41,7 @@
         </div>
 
         <div id="running-time-question" style="display: none;" class="question-container">
-            <label for="running-time">영상의 러닝타임(재생시간) 길이를 선택해주세요 :</label>
+            <label for="running-time">원하시는 영상의 총 재생시간(러닝타임)은 몇 초인가요?</label>
             <select id="running-time" size="1">
                 <option value="" selected disabled>(선택해주세요)</option>
                 <option value="5" data-label="15s">15s (5만원)</option>
@@ -59,7 +59,7 @@
         </div>
 
         <div id="shooting-space-question" style="display: none;">
-            <label>촬영이 필요한 공간을 선택해주세요 (중복선택 가능) :</label><br>
+            <label>촬영이 필요하신 공간을 "모두" 선택해주세요.</label><br>
             <div class="gif-container">
                 <div class="button-wrapper space-button-wrapper">  <button type="button" data-space="indoor" data-price="0" data-label="실내">실내 <span class="price-circle">0</span></button>
                     <img src="https://i.imgur.com/TRX39P1.gif" class="button-gif" style="pointer-events: none;">
@@ -77,13 +77,13 @@
         </div>
 
         <div id="equipment-question" style="display: none;">
-            <label><span id="equipment-question-location"></span> 영상의 무빙 퀄리티를 선택해주세요 :</label><br>
+            <label><span id="equipment-question-location"></span> 영상에 어떤 카메라 무빙을 적용하시겠어요?</label><br>
             <div class="equipment-description">
                 스탠다드: 핸드헬드(카메라를 손으로 들고 무빙)기법으로 영상을 촬영합니다.<br>
                 디럭스: 고급 짐벌을 사용하여, 보다 부드러운 무빙의 영상이 가능합니다.<br>
-                프라임: 슬라이더를 사용하여, 최고로 안정적인 무빙의 영상이 가능합니다.<br>
+                프라임: 슬라이더 및 모든 안정화장비를 함께 사용하여, 흔들림이 없습니다.<br>
                 <p class="description" id="deluxe">&lt;디럭스&gt; - "스탠다드" 무빙퀄리티를 포함합니다. (+짐벌)</p>
-                <p class="description" id="prime">&lt;프라임&gt; - "모든" 무빙퀄리티를 모두 포함합니다. (+모든장비)</p>
+                <p class="description" id="prime">&lt;프라임&gt; - "모든" 무빙퀄리티를 포함합니다. (+모든장비)</p>
             </div>
             <div class="gif-container">
                 <div class="button-wrapper equipment-button-wrapper"> <button type="button" class="standard" data-equipment="standard" data-price="0" data-label="스탠다드">스탠다드 <span class="price-circle">0</span></button>
@@ -99,7 +99,8 @@
         </div>
 
         <div id="text-effect-question" style="display: none;">
-            <label>영상에 삽입할 텍스트 효과를 선택해주세요 (중복선택 가능) :</label><br>
+            <label>자막이 필요하신가요?<br>
+                필요하시다면, 적용하실 효과를 "모두" 선택해주세요.</label><br>
             <p class="description" id="none">자막없음: 텍스트 없이 편집된 컷 클립들로만 영상이 구성됩니다.</p>
             <p class="description" id="normal">일반자막: 화면 상에 상호 및 부가설명 등 일반적인 텍스트를 삽입합니다.</p>
             <p class="description" id="spatial">공간효과: 텍스트가 실제 공간에 배치된 듯한 고급편집 작업을 진행합니다.</p>
@@ -120,8 +121,8 @@
         </div>
 
         <div id="distance-question" style="display: none;">
-            <label>서울 금천구청으로부터 촬영이 필요한 고객님의 공간까지의<br>
-                이동거리를 입력해주세요 :</label>
+            <label>서울 금천구청으로부터 촬영 공간까지의<br>
+                네비게이션 이동거리를 입력해주세요.</label>
             <p>네비게이션의 경로옵션 중 최단거리 기준,<br>
                 30km 초과시 출장비용 발생 (초과되는 1km당 1,500원)<br>
             </p>
@@ -200,6 +201,7 @@
                 <input type="text" id="modal-position" placeholder="직급/직책">
                 <input type="tel" id="modal-phone" placeholder="휴대폰 번호">
                 <input type="email" id="modal-email" placeholder="이메일 주소">
+                <textarea id="modal-notes" placeholder="추가 전달내용 및 특이사항"></textarea>
             </div>
             <button id="modal-submit-button">상담신청</button>
         </div>
