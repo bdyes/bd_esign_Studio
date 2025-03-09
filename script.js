@@ -61,6 +61,18 @@ distanceInput.addEventListener('keydown', (event) => {
   }
 });
 
+// 화면 크기 정보를 업데이트하는 함수
+function updateScreenWidth() {
+  const screenWidth = window.innerWidth;
+  document.getElementById('screen-width-value').textContent = screenWidth;
+}
+
+// 초기 화면 크기 정보 표시
+updateScreenWidth();
+
+// 화면 크기 변경 이벤트 리스너
+window.addEventListener('resize', updateScreenWidth);
+
 function updateTextEffectNextButtonState() {
     const selectedTextEffects = document.querySelectorAll('.text-effect-button.selected');
 
@@ -80,6 +92,7 @@ function updateTextEffectNextButtonState() {
 function checkAllQuestionsAnswered() {
     // 1. 영상 방향 선택 확인
     const videoFormatSelected = document.querySelector('#video-format-question button.selected');
+
 
 
     if (!videoFormatSelected) return false;
