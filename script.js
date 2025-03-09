@@ -1474,25 +1474,30 @@ document.addEventListener("DOMContentLoaded", () => {
             const rect = img.getBoundingClientRect();
             const clonedImg = img.cloneNode(); // 원본을 복제
 
+            // 🔹 다른 GIF 서서히 숨기기
+            gifs.forEach(otherGif => {
+                if (otherGif !== gif) {
+                    otherGif.style.opacity = "0";
+                }
+            });
+		
             // 원본 이미지에는 .zoomed 추가 X
             // 클론 이미지에만 .zoomed 추가
             clonedImg.classList.add("zoomed");
-
-            // 클론 이미지 스타일 설정
             clonedImg.style.position = "fixed";
             clonedImg.style.left = `${rect.left}px`;
             clonedImg.style.top = `${rect.top}px`;
             clonedImg.style.width = `${rect.width}px`;
             clonedImg.style.height = `${rect.height}px`;
-            clonedImg.style.transition = "all 0.2s ease-in-out";
+            clonedImg.style.transition = "all 0.75s ease-in-out, filter 0.75s ease-in-out"; // filter 추가
             clonedImg.style.zIndex = "10001";
             clonedImg.style.objectFit = "contain";
             clonedImg.style.cursor = "pointer";
+		
             overlay.innerHTML = "";
             overlay.appendChild(clonedImg);
-
-            // 오버레이 스타일 설정
             overlay.style.display = "block";
+		
             setTimeout(() => {
                 overlay.style.opacity = "1";
                 overlay.style.backdropFilter = "blur(10px)";
