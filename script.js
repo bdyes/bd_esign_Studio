@@ -1520,6 +1520,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 clonedImg.style.transform = "translate(-50%, -50%)";
                 clonedImg.style.width = "101vw";
                 clonedImg.style.height = "101vh";
+                clonedImg.style.filter = "blur(0px)"; // 블러 제거
             }, 100);
         });
     });
