@@ -1528,17 +1528,26 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.addEventListener("click", () => {
         const clonedImg = overlay.querySelector("img");
         if (clonedImg) {
-            clonedImg.classList.remove("zoomed"); // 커진 이미지에서만 제거
-            
-            clonedImg.style.transition = "opacity 0.5s ease-in-out, filter 0.5s ease-in-out";
+            clonedImg.classList.remove("zoomed"); // 커진 이미지에서만 제거            
+            clonedImg.style.transition = "opacity 1s ease-in-out, filter 1s ease-in-out";
             clonedImg.style.opacity = "0";
             clonedImg.style.filter = "blur(50px)";
-            overlay.style.transition = "opacity 0.5s ease-in-out";
+            overlay.style.transition = "opacity 1s ease-in-out";
             overlay.style.opacity = "0";
+		
+            // 1. 클론 이미지를 먼저 숨깁니다. (예: 100ms 후)
             setTimeout(() => {
                 overlay.style.display = "none";
                 overlay.innerHTML = "";
-            }, 500);
+            }, 1000);
+            
+            // 2. 다른 GIF들을 딜레이를 주고 다시 보이게 합니다. (예: 1000ms 후)
+            setTimeout(() => {
+                gifs.forEach(gif => {
+                    gif.style.opacity = "1";
+                });
+            }, 0); 
+		
         }
     });
 });
