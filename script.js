@@ -247,8 +247,6 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
     // 3. loadingMessage의 '...' 텍스트 *뒤에* spinnerContainer 추가
     loadingMessage.append(spinnerContainer); // appendChild 대신 append 사용
     
-    loadingOverlay.style.display = 'flex'; // 로딩 오버레이 즉시 표시
-
      const gifUrls = [
         "https://i.imgur.com/9Tn72uu.gif", // Landscape
         "https://i.imgur.com/MGeoNWd.gif", // Portrait
@@ -1490,6 +1488,7 @@ document.addEventListener("DOMContentLoaded", () => {
             clonedImg.style.width = `${rect.width}px`;
             clonedImg.style.height = `${rect.height}px`;
             clonedImg.style.transition = "all 0.75s ease-in-out, filter 0.75s ease-in-out"; // filter 추가
+            clonedImg.style.filter = "blur(50px)"; // 초기 블러 설정
             clonedImg.style.zIndex = "10001";
             clonedImg.style.objectFit = "contain";
             clonedImg.style.cursor = "pointer";
