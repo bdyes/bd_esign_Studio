@@ -114,8 +114,8 @@ input[type="checkbox"] {
 #screen-width-container {
     font-weight: 700;
     position: fixed;
-    bottom: 2rem; /* 고정 버튼 컨테이너 위에 위치 */
-    right: 1.7rem;
+    bottom: 3.75rem; /* 고정 버튼 컨테이너 위에 위치 */
+    right: 1.8rem;
     color: #777777; /* 텍스트 색상 */
     opacity: 0.75;
     border-radius: 0.5rem; /* 둥근 모서리 */
