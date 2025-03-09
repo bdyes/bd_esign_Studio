@@ -1467,6 +1467,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(overlay);
 
     gifs.forEach(gif => {
+        gif.style.transition = "opacity 1.2s ease-in-out"; // 🔹 부드럽게 숨기기 위해 미리 설정
+	    
         gif.addEventListener("click", (event) => {
             const img = event.target;
             const rect = img.getBoundingClientRect();
