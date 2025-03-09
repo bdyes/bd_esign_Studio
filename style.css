@@ -99,6 +99,16 @@ input[type="checkbox"] {
   z-index: 9999;
 }
 
+/* GIF 애니메이션 정의 (프레임 수에 따라 조정) */
+@keyframes playGif {
+  from { background-position: 0 0; }
+  to { background-position: -100% 0; } /* GIF 스프라이트 이미지일 경우 */
+}
+
+.hidden-gif {
+    visibility: hidden; /* 보이지 않지만 자리 유지 */
+}
+
 /* -------------------------------------------------- fixed-buttons -------------------------------------------------- */
 /* 고정 버튼 스타일 */
 #fixed-buttons {
@@ -1209,12 +1219,12 @@ body {
 	bottom: 103%;
 	width: auto; /* 또는 */
 	height: 88%; /* button-wrapper 기준, 필요에 따라 조절, */
-	border-radius: 0.5rem; /* 원하는 둥글기 적용 */
+	border-radius: 0.75rem !important; /* 원하는 둥글기 적용 */
 	/* object-fit: contain;  contain,cover,fill,none 속성 사용가능*/
     pointer-events: auto !important; /* 클릭 가능하도록 설정 */
     cursor: pointer; /* 마우스를 올리면 클릭 가능한 커서로 변경 */
     z-index: 10000; /* 다른 요소보다 위에 배치 */
-	transition: 0.25s ease-in-out; 
+	transition: 0.5s ease-in-out !important; 
 }
 
 .button-gif:hover {
