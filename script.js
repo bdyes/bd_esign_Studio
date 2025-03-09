@@ -1463,43 +1463,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const overlay = document.createElement("div");
     overlay.id = "gif-overlay";
     overlay.style.opacity = "0";
-    overlay.style.transition = "opacity 1.2s ease-in-out, backdrop-filter 0.5s ease-in-out";
+    overlay.style.transition = "opacity 0.2s ease-in-out, backdrop-filter 0.5s ease-in-out";
     document.body.appendChild(overlay);
 
     gifs.forEach(gif => {
-        gif.style.transition = "opacity 1.2s ease-in-out"; // 🔹 부드럽게 숨기기 위해 미리 설정
-
         gif.addEventListener("click", (event) => {
             const img = event.target;
             const rect = img.getBoundingClientRect();
+            const clonedImg = img.cloneNode(); // 원본을 복제
 
-            const clonedImg = img.cloneNode(true);
-            const uniqueSrc = img.src + "?t=" + Date.now();
-            clonedImg.src = uniqueSrc;
-
-            // 🔹 다른 GIF 서서히 숨기기
-            gifs.forEach(otherGif => {
-                if (otherGif !== gif) {
-                    otherGif.style.opacity = "0";
-                }
-            });
-
+            // 원본 이미지에는 .zoomed 추가 X
+            // 클론 이미지에만 .zoomed 추가
             clonedImg.classList.add("zoomed");
+
+            // 클론 이미지 스타일 설정
             clonedImg.style.position = "fixed";
             clonedImg.style.left = `${rect.left}px`;
             clonedImg.style.top = `${rect.top}px`;
             clonedImg.style.width = `${rect.width}px`;
             clonedImg.style.height = `${rect.height}px`;
-            clonedImg.style.transition = "all 0.75s ease-in-out, filter 0.75s ease-in-out"; // filter 추가
-            clonedImg.style.filter = "blur(50px)"; // 초기 블러 설정
+            clonedImg.style.transition = "all 0.2s ease-in-out";
             clonedImg.style.zIndex = "10001";
             clonedImg.style.objectFit = "contain";
             clonedImg.style.cursor = "pointer";
-
             overlay.innerHTML = "";
             overlay.appendChild(clonedImg);
-            overlay.style.display = "block";
 
+            // 오버레이 스타일 설정
+            overlay.style.display = "block";
             setTimeout(() => {
                 overlay.style.opacity = "1";
                 overlay.style.backdropFilter = "blur(10px)";
@@ -1515,39 +1506,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 overlay.style.alignItems = "center";
             }, 10);
 
+            // 클론 이미지를 확대
             setTimeout(() => {
                 clonedImg.style.left = "50%";
                 clonedImg.style.top = "50%";
                 clonedImg.style.transform = "translate(-50%, -50%)";
                 clonedImg.style.width = "101vw";
                 clonedImg.style.height = "101vh";
-                clonedImg.style.filter = "blur(0px)"; // 블러 제거
             }, 100);
         });
     });
 
+    // 오버레이 클릭 시 닫기 (zoomed 클래스 제거)
     overlay.addEventListener("click", () => {
         const clonedImg = overlay.querySelector("img");
         if (clonedImg) {
-            clonedImg.classList.remove("zoomed");
-            clonedImg.style.transition = "opacity 1s ease-in-out, filter 1s ease-in-out";
+            clonedImg.classList.remove("zoomed"); // 커진 이미지에서만 제거
+            
+            clonedImg.style.transition = "opacity 0.5s ease-in-out, filter 0.5s ease-in-out";
             clonedImg.style.opacity = "0";
             clonedImg.style.filter = "blur(50px)";
-            overlay.style.transition = "opacity 1s ease-in";
+            overlay.style.transition = "opacity 0.5s ease-in-out";
             overlay.style.opacity = "0";
-
-            // 1. 클론 이미지를 먼저 숨깁니다. (예: 100ms 후)
             setTimeout(() => {
                 overlay.style.display = "none";
                 overlay.innerHTML = "";
-            }, 1000);
-            
-            // 2. 다른 GIF들을 딜레이를 주고 다시 보이게 합니다. (예: 1000ms 후)
-            setTimeout(() => {
-                gifs.forEach(gif => {
-                    gif.style.opacity = "1";
-                });
-            }, 0); 
+            }, 500);
         }
     });
 });
