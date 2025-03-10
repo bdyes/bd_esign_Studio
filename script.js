@@ -207,6 +207,7 @@ function updateContactButtonState() {
     contactButton.classList.add('disabled-button');
     contactButton.textContent = "선택을 모두 완료해주세요"; // 텍스트 변경
 
+
     // 클릭 이벤트 제거 (비활성화 상태)
     contactButton.onclick = null;
   }
@@ -257,69 +258,73 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
         </svg>
     `;
 
-    // 3. loadingMessage의 '...' 텍스트 *뒤에* spinnerContainer 추가
-    loadingMessage.append(spinnerContainer); // appendChild 대신 append 사용
-    
-     const gifUrls = [
-        "https://i.imgur.com/9Tn72uu.gif", // Landscape
-        "https://i.imgur.com/MGeoNWd.gif", // Portrait
-        "https://i.imgur.com/TRX39P1.gif", // Interior
-        "https://i.imgur.com/2r5GlPr.gif", // Exterior
-        "https://i.imgur.com/b858w9R.gif", // Drone
-        "https://i.imgur.com/3kjLw6s.gif", // Standard
-        "https://i.imgur.com/nrdMWRR.gif", // Deluxe
-        "https://i.imgur.com/dTM3bb9.gif", // Prime
-        "https://i.imgur.com/NxR4zQF.gif", // No-Subtitles
-        "https://i.imgur.com/9LpNmrY.gif", // Basic-Subtitles
-        "https://i.imgur.com/I7Myh0x.gif" // Spatial-Subtitles
-    ];
+    // 3. loadingMessage의 '...' 텍스트 뒤에 spinnerContainer 추가
+    loadingMessage.append(spinnerContainer);
+
+    // 📌 기기별 GIF 로드 (768px 기준)
+    const isMobile = window.innerWidth <= 768;
+    const gifMapping = {
+        horizontal: isMobile ? "https://i.imgur.com/vqhQZem.gif" : "https://i.imgur.com/9Tn72uu.gif",
+        vertical: isMobile ? "https://i.imgur.com/alxzl2c.gif" : "https://i.imgur.com/MGeoNWd.gif",
+        indoor: isMobile ? "https://i.imgur.com/N8fw5Hs.gif" : "https://i.imgur.com/TRX39P1.gif",
+        outdoor: isMobile ? "https://i.imgur.com/zCckkDW.gif" : "https://i.imgur.com/2r5GlPr.gif",
+        drone: isMobile ? "https://i.imgur.com/LZhfLnB.gif" : "https://i.imgur.com/b858w9R.gif",
+        standard: isMobile ? "https://i.imgur.com/pTvoppe.gif" : "https://i.imgur.com/3kjLw6s.gif",
+        deluxe: isMobile ? "https://i.imgur.com/wSx0aY2.gif" : "https://i.imgur.com/nrdMWRR.gif",
+        prime: isMobile ? "https://i.imgur.com/tbSPuDc.gif" : "https://i.imgur.com/dTM3bb9.gif",
+        none: isMobile ? "https://i.imgur.com/Ih2aMKU.gif" : "https://i.imgur.com/NxR4zQF.gif",
+        normal: isMobile ? "https://i.imgur.com/apY5bGp.gif" : "https://i.imgur.com/9LpNmrY.gif",
+        spatial: isMobile ? "https://i.imgur.com/odkIvjK.gif" : "https://i.imgur.com/I7Myh0x.gif"
+    };
+
+    // 📌 GIF 프리로드 최적화 (PC vs 모바일 구분)
+    const gifUrls = Object.values(gifMapping);
     let loadedImages = 0;
     let fakeProgress = 0;
     let fakeProgressInterval;
-    let dotsInterval; // 점 애니메이션 interval 변수 추가
+    let dotsInterval;
 
-    // 점 애니메이션 시작 (스피너와는 별개)
+    // 점 애니메이션 시작
     let dots = "";
-    dotsInterval = setInterval(() => { //setInterval 사용
+    dotsInterval = setInterval(() => {
         dots += ".";
-        if(dots.length > 3) {
-          dots = "";
+        if (dots.length > 3) {
+            dots = "";
         }
-        loadingMessage.firstChild.textContent = `로직 데이터를 로드 중입니다${dots}`; // textContent 사용
-
+        loadingMessage.firstChild.textContent = `로직 데이터를 로드 중입니다${dots}`;
     }, 500);
 
-
+    // 가짜 로딩 진행바
     fakeProgressInterval = setInterval(() => {
         fakeProgress += 5;
         if (fakeProgress > 50) {
             fakeProgress = 50;
         }
         progressBar.style.width = `${fakeProgress}%`;
-    }, 1000); // 1000ms마다 증가
+    }, 1000);
 
     function loadImage(url) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
                 loadedImages++;
                 if (loadedImages === gifUrls.length) {
                     clearInterval(fakeProgressInterval);
-                    clearInterval(dotsInterval); // 점 애니메이션도 중지
+                    clearInterval(dotsInterval);
                 }
                 const progress = (loadedImages / gifUrls.length) * 100;
                 progressBar.style.width = `${progress}%`;
                 resolve();
             };
-           img.onerror = () => {
-              loadedImages++; // 에러가 나도 이미지는 로드된걸로 간주
-              if (loadedImages === gifUrls.length) {
-                  clearInterval(fakeProgressInterval);
-                  clearInterval(dotsInterval); // 점 애니메이션 중지
-              }
-              const progress = (loadedImages / gifUrls.length) * 100;
-              progressBar.style.width = `${progress}%`;
-              resolve();  //reject(new Error(`Failed to load image: ${url}`)); // Promise 실패
+            img.onerror = () => {
+                loadedImages++;
+                if (loadedImages === gifUrls.length) {
+                    clearInterval(fakeProgressInterval);
+                    clearInterval(dotsInterval);
+                }
+                const progress = (loadedImages / gifUrls.length) * 100;
+                progressBar.style.width = `${progress}%`;
+                resolve();
             };
             img.src = url;
         });
@@ -327,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
 
     Promise.all(gifUrls.map(url => loadImage(url)))
     .then(() => {
-        // loadingMessage.textContent = "로딩 완료!";  // 텍스트 변경 X
         setTimeout(() => {
             loadingOverlay.style.display = 'none';
             runIntroAnimation();
@@ -341,84 +345,52 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
         }, 500);
     });
 
-
-    // price-bar 클릭 막기
-    priceBar.style.pointerEvents = 'none';
-
-    // price-bar 흐리게 처리
-    priceBar.classList.remove('clickable'); // 'clickable' 클래스 제거 (혹시 있을 경우를 대비)
-
-      // 시작하기 버튼 클릭 시
-    startButton.addEventListener('click', () => {
-
-        // price-bar 클릭 허용
-        priceBar.style.pointerEvents = 'auto';
-
-        // price-bar 스타일 변경
-        priceBar.classList.add('clickable'); // 'clickable' 클래스 추가
+    // 📌 GIF 변경 적용
+    const gifElements = document.querySelectorAll(".button-gif");
+    gifElements.forEach((img) => {
+        const type = img.previousElementSibling.dataset.value || 
+                     img.previousElementSibling.dataset.space || 
+                     img.previousElementSibling.dataset.equipment || 
+                     img.previousElementSibling.dataset.effect;
+        img.src = gifMapping[type];
     });
 
-    // 이벤트 리스너들을 함수로 분리하여 등록
+    // 기존 기능 유지
+    priceBar.style.pointerEvents = 'none';
+    priceBar.classList.remove('clickable');
+
+    startButton.addEventListener('click', () => {
+        priceBar.style.pointerEvents = 'auto';
+        priceBar.classList.add('clickable');
+    });
+
     startButton.addEventListener('click', handleStartButtonClick);
     videoFormatButtons.forEach(button => button.addEventListener('click', handleVideoFormatButtonClick));
     runningTimeSelect.addEventListener('change', handleRunningTimeChange);
     runningTimeButton.addEventListener('click', handleRunningTimeButtonClick);
-    spaceButtons.forEach(button => {
-        button.removeEventListener('click', handleSpaceButtonClick); // 혹시 모를 중복 리스너 제거
-        button.addEventListener('click', handleSpaceButtonClick);
-    });
+    spaceButtons.forEach(button => button.addEventListener('click', handleSpaceButtonClick));
     equipmentButtons.forEach(button => button.addEventListener('click', handleEquipmentButtonClick));
-    textEffectButtons.forEach(button => {
-        button.addEventListener('click', handleTextEffectButtonClick);
-    });
-    textEffectNextButton.addEventListener('click', handleTextEffectNextButtonClick); // 텍스트 효과 다음 버튼 리스너  <-- 이 위치!
+    textEffectButtons.forEach(button => button.addEventListener('click', handleTextEffectButtonClick));
+    textEffectNextButton.addEventListener('click', handleTextEffectNextButtonClick);
 
-      // 페이지 로드 시 localStorage 데이터 적용 (수정)
-    const storedVideoFormat = localStorage.getItem('selectedVideoFormat');
-    if (storedVideoFormat) {
-        videoFormatButtons.forEach(button => {
-            if (button.dataset.value === storedVideoFormat) {
-                button.classList.add('selected');
-            }
-        });
+    // 페이지 로드 시 설정 복원
+    if (sessionStorage.getItem('scrollToTopAfterRefresh') === 'true') {
+        sessionStorage.removeItem('scrollToTopAfterRefresh');
+        scrollToTop(false);
     }
 
-    const storedRunningTime = localStorage.getItem('selectedRunningTime');
-    if (storedRunningTime) {
-        runningTimeSelect.value = storedRunningTime;
+    // 페이지 로드 시 애니메이션
+    anime({
+        targets: '#price-bar',
+        translateY: ['100%', 0],
+        opacity: [0, 1],
+        easing: 'easeInOutExpo',
+        duration: 2000,
+        delay: 100,
+    });
 
-        // 로컬 스토리지에서 값을 가져올 때, 올바른 option을 찾아서 텍스트와 가격 설정
-        const selectedOption = Array.from(runningTimeSelect.options).find(option => option.value === storedRunningTime);
-        if (selectedOption) {
-            const runningTimeText = selectedOption.text.split(' ')[0];
-            const runningTimePrice = selectedOption.value;
-
-            // 수정된 부분: 숫자 값만 price-circle 안에 넣음
-            runningTimeButton.innerHTML = `<span class="math-inline">\{runningTimeText\} <span class\="price\-circle"\></span>{runningTimePrice}</span>`;
-        }
-
-        runningTimeButton.style.display = 'block';
-        runningTimeSelect.style.display = 'none';
-    }
-
-    // 새로고침 후 스크롤을 위로 이동해야 하는지 확인
-    if (sessionStorage.getItem('scrollToTopAfterRefresh') === 'true') {
-        sessionStorage.removeItem('scrollToTopAfterRefresh');
-        scrollToTop(false);
-    }
-
-    // 페이지 로드 시 #price-bar 애니메이션
-    anime({
-      targets: '#price-bar',
-      translateY: ['100%', 0],
-      opacity: [0, 1],
-      easing: 'easeInOutExpo',
-      duration: 2000,
-      delay: 100,
-    });
-    updateContactButtonState(); // 초기 상태 설정  <-- 주석 해제됨!
-}); // 여기에서 window.onload 이벤트 헨들러 종료
-
+    updateContactButtonState();
+});
 
 // #price-bar 클릭 이벤트 리스너
 priceBar.addEventListener('click', () => {
@@ -1161,6 +1133,7 @@ function resetQuestion(questionId) {
     case 'text-effect-question':
       selectedTextEffects = [];
       textEffectButtons.forEach(button => {
+
         button.classList.remove('selected');
       });
       break;
