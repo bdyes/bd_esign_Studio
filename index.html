@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>공간촬영 모의견적 (v8.401)</title>
+    <title>공간촬영 모의견적 (v8.501)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
@@ -32,11 +32,11 @@
             <div class="gif-container">
                 <div class="button-wrapper">
                     <button type="button" class="horizontal" data-value="horizontal" data-price="0" data-label="가로">가로 <span class="price-circle">0</span></button>
-                    <img src="https://i.imgur.com/9Tn72uu.gif" class="button-gif" style="pointer-events: none;">
+                    <img class="button-gif" data-type="landscape" style="pointer-events: none;">
                 </div>
                 <div class="button-wrapper">
                     <button type="button" class="vertical" data-value="vertical" data-price="0" data-label="세로">세로 <span class="price-circle">0</span></button>
-                    <img src="https://i.imgur.com/MGeoNWd.gif" class="button-gif" style="pointer-events: none;">
+                    <img class="button-gif" data-type="portrait" style="pointer-events: none;">
                 </div>
             </div>
         </div>
@@ -62,14 +62,17 @@
         <div id="shooting-space-question" style="display: none;">
             <label>촬영이 필요하신 공간을 "모두" 선택해주세요.</label><br>
             <div class="gif-container">
-                <div class="button-wrapper space-button-wrapper">  <button type="button" data-space="indoor" data-price="0" data-label="실내">실내 <span class="price-circle">0</span></button>
-                    <img src="https://i.imgur.com/TRX39P1.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper space-button-wrapper">
+                    <button type="button" data-space="indoor" data-price="0" data-label="실내">실내 <span class="price-circle">0</span></button>
+                    <img class="button-gif" data-type="interior" style="pointer-events: none;">
                 </div>
-                <div class="button-wrapper space-button-wrapper">  <button type="button" class="exterior" data-space="outdoor" data-price="3" data-label="실외">실외 <span class="price-circle">3</span></button>
-                    <img src="https://i.imgur.com/2r5GlPr.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper space-button-wrapper">
+                    <button type="button" class="exterior" data-space="outdoor" data-price="3" data-label="실외">실외 <span class="price-circle">3</span></button>
+                    <img class="button-gif" data-type="exterior" style="pointer-events: none;">
                 </div>
-                <div class="button-wrapper space-button-wrapper">  <button type="button" class="drone" data-space="drone" data-price="5" data-label="항공(드론)">항공(드론) <span class="price-circle">5</span></button>
-                    <img src="https://i.imgur.com/b858w9R.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper space-button-wrapper">
+                    <button type="button" class="drone" data-space="drone" data-price="5" data-label="항공(드론)">항공(드론) <span class="price-circle">5</span></button>
+                    <img class="button-gif" data-type="drone" style="pointer-events: none;">
                 </div>
             </div>
             <div id="space-next-button-container">
@@ -87,14 +90,17 @@
                 <p class="description" id="prime">&lt;프라임&gt; - "모든" 무빙퀄리티를 포함합니다. (+모든장비)</p>
             </div>
             <div class="gif-container">
-                <div class="button-wrapper equipment-button-wrapper"> <button type="button" class="standard" data-equipment="standard" data-price="0" data-label="스탠다드">스탠다드 <span class="price-circle">0</span></button>
-                    <img src="https://i.imgur.com/3kjLw6s.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper equipment-button-wrapper">
+                    <button type="button" class="standard" data-equipment="standard" data-price="0" data-label="스탠다드">스탠다드 <span class="price-circle">0</span></button>
+                    <img class="button-gif" data-type="standard" style="pointer-events: none;">
                 </div>
-                <div class="button-wrapper equipment-button-wrapper"> <button type="button" data-equipment="deluxe" data-price="5" data-label="디럭스">디럭스 <span class="price-circle">5</span></button>
-                    <img src="https://i.imgur.com/nrdMWRR.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper equipment-button-wrapper">
+                    <button type="button" data-equipment="deluxe" data-price="5" data-label="디럭스">디럭스 <span class="price-circle">5</span></button>
+                    <img class="button-gif" data-type="deluxe" style="pointer-events: none;">
                 </div>
-                <div class="button-wrapper equipment-button-wrapper"> <button type="button" data-equipment="prime" data-price="10" data-label="프라임">프라임 <span class="price-circle">10</span></button>
-                    <img src="https://i.imgur.com/dTM3bb9.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper equipment-button-wrapper">
+                    <button type="button" data-equipment="prime" data-price="10" data-label="프라임">프라임 <span class="price-circle">10</span></button>
+                    <img class="button-gif" data-type="prime" style="pointer-events: none;">
                 </div>
             </div>
         </div>
@@ -106,14 +112,17 @@
             <p class="description" id="normal">일반자막 : 화면 상에 상호 및 부가설명 등 일반적인 텍스트를 삽입합니다.</p>
             <p class="description" id="spatial">공간효과 : 텍스트가 실제 공간에 배치된 듯한 고급편집 작업을 진행합니다.</p>
             <div class="gif-container">
-                <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="none" data-price="0" data-label="필요없음">필요없음 <span class="price-circle">0</span></button>
-                    <img src="https://i.imgur.com/NxR4zQF.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper text-effect-button-wrapper">
+                    <button type="button" data-effect="none" data-price="0" data-label="필요없음">필요없음 <span class="price-circle">0</span></button>
+                    <img class="button-gif" data-type="noSubtitles" style="pointer-events: none;">
                 </div>
-                <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="normal" data-price="3" data-label="일반자막">일반자막 <span class="price-circle">3</span></button>
-                    <img src="https://i.imgur.com/9LpNmrY.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper text-effect-button-wrapper">
+                    <button type="button" data-effect="normal" data-price="3" data-label="일반자막">일반자막 <span class="price-circle">3</span></button>
+                    <img class="button-gif" data-type="basicSubtitles" style="pointer-events: none;">
                 </div>
-                <div class="button-wrapper text-effect-button-wrapper"> <button type="button" data-effect="spatial" data-price="10" data-label="공간효과">공간효과 <span class="price-circle">10</span></button>
-                    <img src="https://i.imgur.com/I7Myh0x.gif" class="button-gif" style="pointer-events: none;">
+                <div class="button-wrapper text-effect-button-wrapper">
+                    <button type="button" data-effect="spatial" data-price="10" data-label="공간효과">공간효과 <span class="price-circle">10</span></button>
+                    <img class="button-gif" data-type="spatialSubtitles" style="pointer-events: none;">
                 </div>
             </div>
             <div id="text-effect-next-button-container">
