@@ -112,24 +112,30 @@ input[type="checkbox"] {
 /* -------------------------------------------------- fixed-buttons -------------------------------------------------- */
 /* 고정 버튼 스타일 */
 #screen-width-container {
+    display: fixed !important;
+    transform-origin: center center; /* 또는 transform-origin: 50% 50%; */
+    text-align: center !important;
     font-weight: 700;
+    font-size: 0.8rem;
     position: fixed;
-    bottom: 3.75rem; /* 고정 버튼 컨테이너 위에 위치 */
-    right: 1.8rem;
-    color: #777777; /* 텍스트 색상 */
-    opacity: 0.75;
-    border-radius: 0.5rem; /* 둥근 모서리 */
+    padding: 0.15rem 0.5rem 0rem 0.5rem;
+    top: 1rem;
+    right: 1.25rem;
+    color: #FFFFFF; /* 텍스트 색상 */
+    background-color: #777777;
+    border-radius: 2rem;
+    opacity: 0.5;
     z-index: 1001; /* 고정 버튼 컨테이너보다 위에 표시 */
 }
 
 #fixed-buttons {
-  position: fixed;
-  bottom: 6rem;
-  right: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  z-index: 1000;
+    position: fixed;
+    bottom: 6rem;
+    right: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    z-index: 1000;
 }
 
 #fixed-buttons button {
