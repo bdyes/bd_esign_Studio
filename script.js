@@ -208,6 +208,7 @@ function updateContactButtonState() {
     contactButton.textContent = "선택을 모두 완료해주세요"; // 텍스트 변경
 
 
+
     // 클릭 이벤트 제거 (비활성화 상태)
     contactButton.onclick = null;
   }
