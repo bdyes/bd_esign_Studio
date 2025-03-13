@@ -210,6 +210,7 @@ function updateContactButtonState() {
 
 
 
+
     // 클릭 이벤트 제거 (비활성화 상태)
     contactButton.onclick = null;
   }
@@ -459,11 +460,16 @@ document.addEventListener('click', (event) => {
   }
 });
 
-// 📌 부드럽고 정확한 스크롤 함수 (맨 아래로 이동 시 최적화)
+// 📌 최적화된 부드러운 스크롤 함수
 function smoothScrollTo(targetPosition) {
     const startPosition = window.scrollY;
     const distance = targetPosition - startPosition;
-    const duration = 1200; // 속도 조절 (500~600ms 추천)
+
+    // 📌 스크롤 거리 기반으로 지속 시간 자동 조정 (최대 1200ms, 최소 500ms)
+    const baseDuration = 600; 
+    const variableDuration = Math.min(1200, Math.max(500, Math.abs(distance) * 0.5));
+    const duration = baseDuration + variableDuration;
+
     let startTime = null;
 
     function easeInOutCubic(t) {
@@ -475,7 +481,15 @@ function smoothScrollTo(targetPosition) {
         const elapsedTime = currentTime - startTime;
         const progress = Math.min(elapsedTime / duration, 1); // 0~1 범위 유지
 
-        window.scrollTo(0, startPosition + distance * easeInOutCubic(progress));
+        const newPosition = startPosition + distance * easeInOutCubic(progress);
+
+        // 📌 목표 위치에 거의 도달하면 애니메이션 강제 종료
+        if (Math.abs(newPosition - targetPosition) < 1) {
+            window.scrollTo(0, targetPosition);
+            return;
+        }
+
+        window.scrollTo(0, newPosition);
 
         if (elapsedTime < duration) {
             requestAnimationFrame(animationStep);
@@ -485,13 +499,18 @@ function smoothScrollTo(targetPosition) {
     requestAnimationFrame(animationStep);
 }
 
-// 📌 고정 버튼 이벤트 리스너 수정 (맨 아래 이동 최적화)
+// 📌 고정 버튼 이벤트 리스너 수정 (최적화)
 topButton.addEventListener('click', () => {
     smoothScrollTo(0); // 맨 위로 스크롤
 });
 
 bottomButton.addEventListener('click', () => {
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    // 📌 최적의 최댓값 계산
+    const maxScroll = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight
+    ) - window.innerHeight;
+
     smoothScrollTo(maxScroll); // 스크롤 가능한 최대로 이동
 });
 
@@ -1051,6 +1070,7 @@ function updateReceipt() {
   if (selectedEquipmentButton) {
     addReceiptItem("무빙 퀄리티", selectedEquipmentButton.dataset.label, (parseInt(selectedEquipmentButton.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
   }
+
 
   // 5. 텍스트 효과
   const selectedTextEffectButtons = document.querySelectorAll("#text-effect-question button.selected");
