@@ -1481,12 +1481,19 @@ document.getElementById('modal-submit-button').addEventListener('click', functio
 document.addEventListener("DOMContentLoaded", () => {
     const gifs = document.querySelectorAll(".button-gif");
     const overlay = document.createElement("div");
+    const versionContainer = document.getElementById("version-text");
     overlay.id = "gif-overlay";
     overlay.style.opacity = "0";
     overlay.style.transition = "opacity 0.2s ease-in-out, backdrop-filter 0.5s ease-in-out";
     document.body.appendChild(overlay);
 
-    gifs.forEach(gif => {
+    // 현재 <title>에서 버전 정보 (vX.XXX)만 추출
+    const pageTitle = document.title.match(/\(v[\d.]+\)/); // "(v8.701)" 형태 추출
+    if (pageTitle) {
+        versionContainer.textContent = pageTitle[0].replace(/[()]/g, ""); // "v8.701"만 표시
+    }
+
+	gifs.forEach(gif => {
         gif.style.transition = "opacity 1.2s ease-in-out"; // 🔹 부드럽게 숨기기 위해 미리 설정
 	    
         gif.addEventListener("click", (event) => {
