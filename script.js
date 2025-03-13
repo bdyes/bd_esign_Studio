@@ -209,6 +209,7 @@ function updateContactButtonState() {
 
 
 
+
     // 클릭 이벤트 제거 (비활성화 상태)
     contactButton.onclick = null;
   }
@@ -458,9 +459,43 @@ document.addEventListener('click', (event) => {
   }
 });
 
-// 고정 버튼 이벤트 리스너
-topButton.addEventListener('click',() => scrollToTop(true));
-bottomButton.addEventListener('click', () => scrollToBottom());
+// 📌 부드럽고 정확한 스크롤 함수 (맨 아래로 이동 시 최적화)
+function smoothScrollTo(targetPosition) {
+    const startPosition = window.scrollY;
+    const distance = targetPosition - startPosition;
+    const duration = 1200; // 속도 조절 (500~600ms 추천)
+    let startTime = null;
+
+    function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function animationStep(currentTime) {
+        if (!startTime) startTime = currentTime;
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1); // 0~1 범위 유지
+
+        window.scrollTo(0, startPosition + distance * easeInOutCubic(progress));
+
+        if (elapsedTime < duration) {
+            requestAnimationFrame(animationStep);
+        }
+    }
+
+    requestAnimationFrame(animationStep);
+}
+
+// 📌 고정 버튼 이벤트 리스너 수정 (맨 아래 이동 최적화)
+topButton.addEventListener('click', () => {
+    smoothScrollTo(0); // 맨 위로 스크롤
+});
+
+bottomButton.addEventListener('click', () => {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    smoothScrollTo(maxScroll); // 스크롤 가능한 최대로 이동
+});
+
+// 🔄 새로고침 버튼 (애니메이션 포함)
 refreshButton.addEventListener('click', () => {
     const whiteOverlay = document.getElementById('white-overlay');
 
