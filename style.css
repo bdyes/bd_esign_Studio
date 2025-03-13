@@ -1,1726 +1,1648 @@
-const form = document.getElementById('quote-form');
-const resultDiv = document.getElementById('result');
-const videoFormatQuestion = document.getElementById('video-format-question');
-const runningTimeQuestion = document.getElementById('running-time-question');
-const shootingSpaceQuestion = document.getElementById('shooting-space-question');
-const equipmentQuestion = document.getElementById('equipment-question');
-const equipmentQuestionLocation = document.getElementById('equipment-question-location');
-const textEffectQuestion = document.getElementById('text-effect-question');
-const videoFormatButtons = videoFormatQuestion.querySelectorAll('button');
-const spaceButtons = shootingSpaceQuestion.querySelectorAll('button');
-const equipmentButtons = equipmentQuestion.querySelectorAll('button');
-const textEffectButtons = textEffectQuestion.querySelectorAll('button[data-effect]');
-const runningTimeSelect = document.getElementById('running-time');
-const runningTimeButton = document.getElementById('running-time-button');
-const startButton = document.getElementById('start-button');
-const fixedButtons = document.getElementById('fixed-buttons');
-const topButton = document.getElementById('top-button');
-const bottomButton = document.getElementById('bottom-button');
-const refreshButton = document.getElementById('refresh-button');
-const contactButton = document.getElementById('contact-button');
-const whiteOverlay = document.getElementById('white-overlay'); // 상단에 whiteOverlay 요소 가져오기
-const textEffectNextButton = document.getElementById('text-effect-next-button'); // 텍스트 효과 다음 버튼
-const distanceResultButton = document.getElementById('distance-result-button'); // 새 버튼
-const distanceResultText = document.getElementById('distance-result-text'); // 새 버튼 안의 텍스트
-const finalMessage = document.getElementById('final-message');
-
-let selectedEquipment = null;
-let selectedTextEffects = [];
-let isContactButtonClicked = false; // 플래그 변수 추가
-let isModalOpen = false; // 모달 열림 상태 플래그
-let isDistanceEntered = false; // 이동거리 입력 여부를 저장하는 변수
-let nextQuestionShown = false;
-
-// priceBar 관련 변수
-const priceBar = document.getElementById('price-bar');
-const receiptContainer = document.getElementById('receipt-container');
-const receiptTotalPrice = document.getElementById('receipt-total-price');
-const receiptContent = document.getElementById('receipt-content'); // receiptContent 변수 선언
-
-// "다음" 버튼 변수 추가
-const spaceNextButton = document.getElementById('space-next-button');
-
-// **추가**: 이동 거리 관련 변수
-const distanceQuestion = document.getElementById('distance-question');
-const distanceInput = document.getElementById('distance-input');
-const distanceButton = document.getElementById('distance-button');
-
-// priceBar의 초기 높이 (px 단위) - CSS의 #price-bar height와 일치
-const priceBarHeight = 20;
-
-// 추가: 경고 메시지 요소
-const alertMessage = document.createElement('div');
-alertMessage.id = 'alert-message';
-document.body.appendChild(alertMessage); // body에 추가
-
-// distanceInput에 keydown 이벤트 리스너 추가
-distanceInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') {
-    event.preventDefault(); // 기본 폼 제출 동작 방지
-    distanceButton.click(); // distanceButton 클릭 이벤트 발생
-  }
-});
-
-// 화면 크기 정보를 업데이트하는 함수
-function updateScreenWidth() {
-  const screenWidth = window.innerWidth;
-  document.getElementById('screen-width-value').textContent = screenWidth;
+html {
+  font-size: 16px;
 }
 
-// 초기 화면 크기 정보 표시
-updateScreenWidth();
-
-// 화면 크기 변경 이벤트 리스너
-window.addEventListener('resize', updateScreenWidth);
-
-function updateTextEffectNextButtonState() {
-    const selectedTextEffects = document.querySelectorAll('.text-effect-button.selected');
-
-    if (selectedTextEffects.length > 0) {
-        textEffectNextButton.style.display = "block"; // 버튼 보이게 하기
-        textEffectNextButton.disabled = false;
-        textEffectNextButton.style.opacity = "1";
-        textEffectNextButton.classList.remove('selected'); // selected 클래스 강제 제거
-    } else {
-        textEffectNextButton.style.opacity = "0"; // 먼저 투명하게 만들고
-        textEffectNextButton.style.display = "none";  // 버튼 완전히 숨기기
-        textEffectNextButton.classList.remove('selected'); // selected 클래스 강제 제거
-    }
+body {
+  font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+  font-weight: 700;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
 }
 
-// 모든 질문에 답변이 완료되었는지 확인하는 함수
-function checkAllQuestionsAnswered() {
-    // 1. 영상 방향 선택 확인
-    const videoFormatSelected = document.querySelector('#video-format-question button.selected');
-
-
-
-    if (!videoFormatSelected) return false;
-
-    // 2. 러닝타임 선택 확인
-    const runningTimeSelected = runningTimeSelect.value !== '';
-    if (!runningTimeSelected) return false;
-
-    // 3. 촬영 공간 선택 확인
-    const spaceSelected = document.querySelectorAll('#shooting-space-question button.selected').length > 0;
-    if (!spaceSelected) return false;
-
-    // 4. 무빙 퀄리티 선택 확인
-    const selectedSpaces = Array.from(document.querySelectorAll('#shooting-space-question button.selected')).map(b => b.dataset.space);
-    const showEquipmentQuestion = selectedSpaces.includes('indoor') || selectedSpaces.includes('outdoor');
-    
-    if (showEquipmentQuestion) {
-        const equipmentSelected = document.querySelector('#equipment-question button.selected');
-        if (!equipmentSelected) return false;
-    }
-
-    // 5. 텍스트 효과 선택 확인 (수정됨)
-    if (textEffectQuestion.style.display !== 'none') {
-        const textEffectSelected = document.querySelectorAll('#text-effect-question button.selected').length > 0;
-        // textEffectNextButton이 숨겨져 있는지 (display === 'none') 확인 추가
-        if (!textEffectSelected || textEffectNextButton.style.display !== 'none') return false;
-    }
-
-    // 6. 이동 거리 선택 확인 (수정됨)
-    if (distanceQuestion.style.display !== 'none' && !isDistanceEntered) {
-        return false;
-    }
-	
-    return true;
+h1 {
+  font-family: 'AppleSDGothicNeoEB00', 'Nanum Gothic', 'Roboto', sans-serif;
+  font-weight: 600;
+  text-align: center;
+  color: #343a40;
+  margin-bottom: 3.125rem;
 }
 
-// "문의하기" 버튼 상태 업데이트 함수
-function updateContactButtonState() {
-  const allAnswered = checkAllQuestionsAnswered();
-  if (allAnswered) {
-    contactButton.disabled = false; // 활성화
-    contactButton.classList.remove('disabled-button');
-    contactButton.textContent = "문의하기"; // 텍스트 변경
-
-    // 클릭 이벤트 핸들러 추가
-    contactButton.onclick = function() {
-      isContactButtonClicked = true; // 문의하기 버튼 클릭 시 플래그 true
-      isModalOpen = true; // 모달이 열릴 때 플래그를 true로 설정
-
-      const overlay = document.getElementById('overlay');
-      const receiptModal = document.getElementById('receipt-modal');
-      const receiptModalItems = document.getElementById("receipt-modal-items"); // 스크롤 대상
-
-      updateReceiptModal(); // 내용 업데이트
-
-      // body 스크롤 막기
-      // document.body.style.overflow = 'hidden';
-
-      // 오버레이 애니메이션 (fadeIn)
-      anime({
-        targets: overlay,
-        opacity: [0, 1],
-        duration: 500,
-        easing: 'easeOutQuad',
-        begin: () => {
-          overlay.style.display = 'block'; // 애니메이션 시작 전에 보이게
-        },
-        complete: () => {
-          overlay.classList.add('active'); // pointer-events 활성화
-        }
-      });
-
-      // 영수증 모달 애니메이션 (slideUp)
-      anime({
-        targets: receiptModal,
-        translateY: ['100%', '0%'], // 아래에서 위로
-        opacity: [0, 1],
-        duration: 500,
-        easing: 'easeOutCubic',
-        begin: () => {
-          receiptModal.style.display = 'block';// 애니메이션 시작 전에 보이게
-        },
-        complete: () => {
-          receiptModal.classList.add('active');
-			const modalHeight = receiptModal.offsetHeight; // padding, border 포함
-			const scrollHeight = receiptModal.scrollHeight;
-			const clientHeight = receiptModal.clientHeight; // padding 포함, scrollbar 제외
-			
-			// 스크롤해야 할 거리 = 전체 내용 높이 - 보이는 부분 높이
-			let scrollTo = scrollHeight - clientHeight;
-			
-			// (선택 사항) 특정 픽셀만큼 덜 스크롤하고 싶다면:
-			const offset = 0; // 예: 300px만큼 덜 스크롤
-			scrollTo = Math.max(0, scrollTo - offset); // 음수가 되지 않도록
-			
-			anime({
-				targets: receiptModal,
-				scrollTop: scrollTo,
-				delay: 1200,
-				duration: 800,
-				easing: 'easeInOutCubic'
-			});
-
-          isContactButtonClicked = false;
-          // setTimeout 제거
-        }
-      });
-    };
-
-  } else {
-    contactButton.disabled = true; // 비활성화
-    contactButton.classList.add('disabled-button');
-    contactButton.textContent = "선택을 모두 완료해주세요"; // 텍스트 변경
-
-
-
-
-    // 클릭 이벤트 제거 (비활성화 상태)
-    contactButton.onclick = null;
-  }
+#quote-form {
+  background-color: #fff;
+  padding: 1.875rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 31.25rem;
+  text-align: left;
+  margin-top: 1.875rem;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
 }
 
-// 페이지 로드 및 새로고침 시 애니메이션 실행
-function runIntroAnimation() {
-    anime.timeline({
-        easing: 'easeOutExpo'
-    })
-    .add({
-        targets: 'html, body',
-        scrollTop: [document.body.scrollHeight, 0],
-
-        duration: 500,
-        easing: 'easeInOutSine'
-    }, 0)
-    .add({
-        targets: '#title',
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 1000,
-        delay: 600
-    }, 0)
-    .add({
-        targets: '#start-button',
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 1200,
-        delay: 750
-    }, 0);
+#quote-form.show {
+  opacity: 1;
 }
 
-// 페이지 로드 시 애니메이션 실행 + 이벤트 리스너 등록
-document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용!
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const progressBar = document.getElementById('loading-progress-bar');
-    const loadingMessage = document.getElementById('loading-message');
-
-    // 1. 스피너 컨테이너 요소 생성
-    const spinnerContainer = document.createElement('span');
-    spinnerContainer.classList.add('spinner-container');
-
-    // 2. 스피너 SVG 코드를 spinnerContainer에 추가
-    spinnerContainer.innerHTML = `
-        <svg class="spinner" viewBox="0 0 50 50">
-            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-        </svg>
-    `;
-
-    // 3. loadingMessage의 '...' 텍스트 뒤에 spinnerContainer 추가
-    loadingMessage.append(spinnerContainer);
-
-    // 📌 기기별 GIF 로드 (768px 기준)
-    const isMobile = window.innerWidth <= 768;
-    const gifMapping = {
-        horizontal: isMobile ? "https://i.imgur.com/vqhQZem.gif" : "https://i.imgur.com/9Tn72uu.gif",
-        vertical: isMobile ? "https://i.imgur.com/alxzl2c.gif" : "https://i.imgur.com/MGeoNWd.gif",
-        indoor: isMobile ? "https://i.imgur.com/N8fw5Hs.gif" : "https://i.imgur.com/TRX39P1.gif",
-        outdoor: isMobile ? "https://i.imgur.com/zCckkDW.gif" : "https://i.imgur.com/2r5GlPr.gif",
-        drone: isMobile ? "https://i.imgur.com/LZhfLnB.gif" : "https://i.imgur.com/b858w9R.gif",
-        standard: isMobile ? "https://i.imgur.com/pTvoppe.gif" : "https://i.imgur.com/3kjLw6s.gif",
-        deluxe: isMobile ? "https://i.imgur.com/wSx0aY2.gif" : "https://i.imgur.com/nrdMWRR.gif",
-        prime: isMobile ? "https://i.imgur.com/tbSPuDc.gif" : "https://i.imgur.com/dTM3bb9.gif",
-        none: isMobile ? "https://i.imgur.com/Ih2aMKU.gif" : "https://i.imgur.com/NxR4zQF.gif",
-        normal: isMobile ? "https://i.imgur.com/apY5bGp.gif" : "https://i.imgur.com/9LpNmrY.gif",
-        spatial: isMobile ? "https://i.imgur.com/odkIvjK.gif" : "https://i.imgur.com/I7Myh0x.gif"
-    };
-
-    // 📌 GIF 프리로드 최적화 (PC vs 모바일 구분)
-    const gifUrls = Object.values(gifMapping);
-    let loadedImages = 0;
-    let fakeProgress = 0;
-    let fakeProgressInterval;
-    let dotsInterval;
-
-    // 점 애니메이션 시작
-    let dots = "";
-    dotsInterval = setInterval(() => {
-        dots += ".";
-        if (dots.length > 3) {
-            dots = "";
-        }
-        loadingMessage.firstChild.textContent = `로직 데이터를 로드 중입니다${dots}`;
-    }, 500);
-
-    // 가짜 로딩 진행바
-    fakeProgressInterval = setInterval(() => {
-        fakeProgress += 5;
-        if (fakeProgress > 50) {
-            fakeProgress = 50;
-        }
-        progressBar.style.width = `${fakeProgress}%`;
-    }, 1000);
-
-    function loadImage(url) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                loadedImages++;
-                if (loadedImages === gifUrls.length) {
-                    clearInterval(fakeProgressInterval);
-                    clearInterval(dotsInterval);
-                }
-                const progress = (loadedImages / gifUrls.length) * 100;
-                progressBar.style.width = `${progress}%`;
-                resolve();
-            };
-            img.onerror = () => {
-                loadedImages++;
-                if (loadedImages === gifUrls.length) {
-                    clearInterval(fakeProgressInterval);
-                    clearInterval(dotsInterval);
-                }
-                const progress = (loadedImages / gifUrls.length) * 100;
-                progressBar.style.width = `${progress}%`;
-                resolve();
-            };
-            img.src = url;
-        });
-    }
-
-    Promise.all(gifUrls.map(url => loadImage(url)))
-    .then(() => {
-        setTimeout(() => {
-            loadingOverlay.style.display = 'none';
-            runIntroAnimation();
-        }, 500);
-    })
-    .catch(error => {
-        console.error(error);
-        setTimeout(() => {
-            loadingOverlay.style.display = 'none';
-            runIntroAnimation();
-        }, 500);
-    });
-
-    // 📌 GIF 변경 적용
-    const gifElements = document.querySelectorAll(".button-gif");
-    gifElements.forEach((img) => {
-        const type = img.previousElementSibling.dataset.value || 
-                     img.previousElementSibling.dataset.space || 
-                     img.previousElementSibling.dataset.equipment || 
-                     img.previousElementSibling.dataset.effect;
-        img.src = gifMapping[type];
-    });
-
-    // 기존 기능 유지
-    priceBar.style.pointerEvents = 'none';
-    priceBar.classList.remove('clickable');
-
-    startButton.addEventListener('click', () => {
-        priceBar.style.pointerEvents = 'auto';
-        priceBar.classList.add('clickable');
-    });
-
-    startButton.addEventListener('click', handleStartButtonClick);
-    videoFormatButtons.forEach(button => button.addEventListener('click', handleVideoFormatButtonClick));
-    runningTimeSelect.addEventListener('change', handleRunningTimeChange);
-    runningTimeButton.addEventListener('click', handleRunningTimeButtonClick);
-    spaceButtons.forEach(button => button.addEventListener('click', handleSpaceButtonClick));
-    equipmentButtons.forEach(button => button.addEventListener('click', handleEquipmentButtonClick));
-    textEffectButtons.forEach(button => button.addEventListener('click', handleTextEffectButtonClick));
-    textEffectNextButton.addEventListener('click', handleTextEffectNextButtonClick);
-
-    // 페이지 로드 시 설정 복원
-    if (sessionStorage.getItem('scrollToTopAfterRefresh') === 'true') {
-        sessionStorage.removeItem('scrollToTopAfterRefresh');
-        scrollToTop(false);
-    }
-
-    // 페이지 로드 시 애니메이션
-    anime({
-        targets: '#price-bar',
-        translateY: ['100%', 0],
-        opacity: [0, 1],
-        easing: 'easeInOutExpo',
-        duration: 2000,
-        delay: 100,
-    });
-
-    updateContactButtonState();
-});
-
-// #price-bar 클릭 이벤트 리스너
-priceBar.addEventListener('click', () => {
-  if (!priceBar.classList.contains('open')) { // priceBar가 열릴 때만 updateReceipt() 호출
-    // 열기: #price-bar의 높이를 늘림
-     // 애니메이션 전에 auto로 설정
-    updateReceipt(); // 영수증 내용 업데이트  <-- 애니메이션 전에 호출!
-
-    const newHeight = receiptContent.offsetHeight;
-    anime({
-      targets: priceBar,
-      height: newHeight + priceBarHeight,
-      duration: 600,
-      easing: 'cubicBezier(0.85,0,0.15,1)',
-      complete: () => {
-        // 애니메이션 완료 후 height를 auto로
-        priceBar.classList.add('open');
-      },
-    });
-  } else {
-    // 닫기 전에 isContactButtonClicked 확인
-    if (!isContactButtonClicked && !isModalOpen) { // 이 조건문 수정
-      anime({
-        targets: priceBar,
-        height: priceBarHeight,
-        duration: 600,
-        easing: 'cubicBezier(0.85,0,0.15,1)',
-        complete: () => {
-          priceBar.classList.remove('open');
-          receiptContainer.style.height = '0'; // 닫힐 때 높이 0
-        }
-      });
-    }
-  }
-});
-
-// ******** 추가된 부분 시작 ********  <-- 이 주석 및 아래 코드를 여기에 삽입
-// 문서 전체 클릭 이벤트 리스너 (이벤트 위임)
-document.addEventListener('click', (event) => {
-  // 1. 클릭된 요소가 priceBar 내부인지 확인
-  const isInsidePriceBar = priceBar.contains(event.target);
-
-  // 2. priceBar가 열려있는지 확인
-  const isPriceBarOpen = priceBar.classList.contains('open');
-
-  // 3. 클릭된 요소가 버튼인지 확인
-  const isButton = event.target.tagName === 'BUTTON' || event.target.closest('button'); // 버튼 또는 버튼 자식 요소 클릭
-
-  // 4. priceBar 바깥을 클릭했고, priceBar가 열려있는 상태이고, 버튼이 아니라면 닫기
-  if (!isInsidePriceBar && isPriceBarOpen && !isButton) {
-    // 닫기 전에 isContactButtonClicked와 isModalOpen 확인
-    if (!isContactButtonClicked && !isModalOpen) { // 이 조건문 수정
-      anime({
-        targets: priceBar,
-        height: priceBarHeight,
-        duration: 600,
-        easing: 'cubicBezier(0.85,0,0.15,1)',
-        complete: () => {
-          priceBar.classList.remove('open');
-          receiptContainer.style.height = '0'; // 닫힐 때 높이 0
-        }
-      });
-    }
-  }
-});
-
-// 📌 부드럽고 정확한 스크롤 함수 (맨 아래로 이동 시 최적화)
-function smoothScrollTo(targetPosition) {
-    const startPosition = window.scrollY;
-    const distance = targetPosition - startPosition;
-    const duration = 1200; // 속도 조절 (500~600ms 추천)
-    let startTime = null;
-
-    function easeInOutCubic(t) {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    }
-
-    function animationStep(currentTime) {
-        if (!startTime) startTime = currentTime;
-        const elapsedTime = currentTime - startTime;
-        const progress = Math.min(elapsedTime / duration, 1); // 0~1 범위 유지
-
-        window.scrollTo(0, startPosition + distance * easeInOutCubic(progress));
-
-        if (elapsedTime < duration) {
-            requestAnimationFrame(animationStep);
-        }
-    }
-
-    requestAnimationFrame(animationStep);
+label {
+	display: block;
+	font-weight: bold;
+	font-size: 1.1rem;
+	margin-top: 0rem;
+	margin-bottom: 0;
 }
 
-// 📌 고정 버튼 이벤트 리스너 수정 (맨 아래 이동 최적화)
-topButton.addEventListener('click', () => {
-    smoothScrollTo(0); // 맨 위로 스크롤
-});
-
-bottomButton.addEventListener('click', () => {
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    smoothScrollTo(maxScroll); // 스크롤 가능한 최대로 이동
-});
-
-// 🔄 새로고침 버튼 (애니메이션 포함)
-refreshButton.addEventListener('click', () => {
-    const whiteOverlay = document.getElementById('white-overlay');
-
-    // 1️⃣ 흰색 오버레이 페이드인
-    whiteOverlay.style.display = 'block';
-    anime({
-        targets: whiteOverlay,
-        opacity: [0, 1],
-        duration: 500,
-        easing: 'easeOutExpo',
-        complete: () => {
-            // 2️⃣ 초기화 함수 실행 (페이지 새로고침 없이 데이터 리셋)
-            resetToStartScreen();
-
-            // 3️⃣ 페이드아웃 (초기화된 화면이 자연스럽게 나타남)
-            anime({
-                targets: whiteOverlay,
-                opacity: [1, 0],
-                duration: 500,
-                easing: 'easeInExpo',
-                complete: () => {
-                    whiteOverlay.style.display = 'none'; // 완전히 숨김
-                }
-            });
-        }
-    });
-});
-
-// 🔄 '시작하기' 화면으로 초기화하는 함수
-function resetToStartScreen() {
-  // 1️⃣ 모든 입력값과 선택 상태 초기화
-  localStorage.clear(); // 저장된 데이터 삭제
-  document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-  document.querySelectorAll('input, select').forEach(el => el.value = '');
-  isDistanceEntered = false; // 거리 입력 상태도 초기화
-
-  // 2️⃣ 모든 질문 숨김
-  form.style.display = 'none';
-  runningTimeQuestion.style.display = 'none';
-  shootingSpaceQuestion.style.display = 'none';
-  equipmentQuestion.style.display = 'none';
-  textEffectQuestion.style.display = 'none';
-  distanceQuestion.style.display = 'none';
-  finalMessage.style.display = 'none';
-
-  // ✅ form의 show 클래스 제거 (애니메이션이 다시 적용되도록)
-  form.classList.remove('show');
-
-  // 3️⃣ '시작하기' 버튼과 제목 다시 표시
-  startButton.style.display = 'block';
-  title.style.opacity = 0; // 애니메이션을 위해 숨김
-  startButton.style.opacity = 0;
-
-  // 4️⃣ 누적 견적 바 다시 흐리게 만들고 비활성화
-  priceBar.style.pointerEvents = 'none';
-  priceBar.classList.remove('clickable');
-  document.getElementById('total-price').textContent = '0원';
-  document.getElementById('receipt-total-price').textContent = '0원';
-
-    // 5️⃣ 처음 로드될 때처럼 애니메이션 실행
-    anime.timeline({ easing: 'easeOutExpo' })
-        .add({
-            targets: '#title',
-            translateY: [20, 0],
-            opacity: [0, 1],
-            duration: 1000,
-            delay: 500
-        })
-        .add({
-            targets: '#start-button',
-            translateY: [20, 0],
-            opacity: [0, 1],
-            duration: 1000,
-            delay: 0
-        }, '-=800');
-
-  // 6️⃣ 무빙 퀄리티(equipment) 초기화
-    equipmentButtons.forEach(button => {
-      button.classList.remove('selected');
-    });
-    selectedEquipment = null;
-
-    // 7️⃣ 이동 거리(distance) 초기화
-    distanceInput.value = '';
-    distanceResultButton.style.display = 'none';
-    distanceInput.style.display = '';
-    document.querySelector('#distance-question .unit').style.display = '';
-    distanceButton.style.display = '';
-    isDistanceEntered = false;
-
-  scrollToTop();
+select,
+input[type="number"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  box-sizing: border-box;
 }
 
-// 🔹 '시작하기' 버튼 클릭 시 실행되는 함수 (애니메이션 복구 추가)
-function handleStartButtonClick() {
-    startButton.style.display = 'none';
-    form.style.display = 'block';
-    requestAnimationFrame(() => form.classList.add('show'));
-
-    localStorage.removeItem('selectedVideoFormat');
-    videoFormatButtons.forEach(b => b.classList.remove('selected'));
-    runningTimeSelect.selectedIndex = 0;
-    runningTimeButton.style.display = 'none';
-    runningTimeSelect.style.display = '';
-    resultDiv.textContent = '';
-
-    // 질문 div들을 모두 숨깁니다. (초기화)
-    runningTimeQuestion.style.display = 'none';
-    runningTimeQuestion.classList.remove('question-container', 'show');
-    shootingSpaceQuestion.style.display = 'none';
-    shootingSpaceQuestion.classList.remove('question-container', 'show');
-    equipmentQuestion.style.display = 'none';
-    equipmentQuestion.classList.remove('question-container', 'show');
-    textEffectQuestion.style.display = 'none';
-    textEffectQuestion.classList.remove('question-container', 'show');
-
-    // 스크롤 애니메이션 추가 (수정된 부분)
-    const scrollOffset = 10 * parseFloat(getComputedStyle(document.documentElement).fontSize); // 5rem을 px로 변환
-
-    anime({
-        targets: 'html, body',
-        scrollTop: `+=${scrollOffset}`, // 현재 위치에서 scrollOffset만큼 아래로
-        duration: 800,
-        easing: 'easeInOutCubic'
-    });
-
-    updateTotalPrice();
-    updateContactButtonState(); // 추가
+input[type="checkbox"] {
+  margin-right: 0.5rem;
 }
 
-function handleVideoFormatButtonClick(event) {
-    videoFormatButtons.forEach(b => b.classList.remove('selected'));
-    event.currentTarget.classList.add('selected');
-    localStorage.setItem('selectedVideoFormat', event.currentTarget.dataset.value);
-
-    runningTimeQuestion.style.display = 'block';
-    anime({
-        targets: runningTimeQuestion,
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 1000,
-        easing: 'easeOutExpo'
-    });
-
-    updateTotalPrice();
-    scrollToBottom();
-    updateContactButtonState(); // 추가
+#start-button {
+  margin-top: 1.875rem;
+  padding: 0.9375rem 1.875rem;
+  font-size: 1.125rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 1.5625rem;
+  background-color: #006cff;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+  transition: 0.2s;
 }
 
-function handleRunningTimeChange() {
-    const selectedOption = runningTimeSelect.options[runningTimeSelect.selectedIndex];
-    const runningTimeText = selectedOption.text.split(' ')[0]; // "60s"
-    const runningTimePrice = selectedOption.value; // "16"
-
-    // 수정된 부분: 숫자 값만 price-circle 안에 넣음
-    runningTimeButton.innerHTML = `${runningTimeText} <span class="price-circle">${runningTimePrice}</span>`; 
-    runningTimeButton.style.display = 'block';
-
-    runningTimeSelect.size = 1;
-    runningTimeSelect.style.display = 'none';
-
-    localStorage.setItem('selectedRunningTime', runningTimeSelect.value);
-
-	/* resetQuestion('shooting-space-question'); */
-    shootingSpaceQuestion.style.display = 'block';
-    anime({
-        targets: shootingSpaceQuestion,
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 1000,
-        easing: 'easeOutExpo'
-    });
-
-    updateTotalPrice();
-    scrollToBottom();
-    updateContactButtonState(); // 추가
+#start-button:hover {
+  transform: translateY(-2rem);
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.3);
+  filter: brightness(0.8) contrast(1.4) saturate(0.9); /* 밝기를 80%로 줄이고, 대비를 120%로 늘림 */
 }
 
-function handleRunningTimeButtonClick() {
-    runningTimeButton.style.display = 'none';
-    runningTimeSelect.style.display = 'block';
-
-    const storedRunningTime = localStorage.getItem('selectedRunningTime');
-    if (storedRunningTime) {
-        runningTimeSelect.value = storedRunningTime;
-    }
-
-    // updateTotalPrice();  // <-- 임시로 주석 처리 또는 제거
-    runningTimeSelect.size = runningTimeSelect.options.length;
-
-
-
-    updateContactButtonState(); // 추가
+/* 애니메이션 시작 시 초기 상태 설정 */
+#title,
+#start-button {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-// 전역 변수로 추가: 이전에 다음 질문이 표시되었었는지 여부
-/* let nextQuestionShown = false; */
-
-// handleSpaceButtonClick 함수 (수정)
-function handleSpaceButtonClick(event) {
-  const button = event.currentTarget;
-
-
-  // 클릭된 버튼이 spaceNextButton인지 확인
-  if (button.id !== 'space-next-button') {
-    button.classList.toggle('selected'); // spaceNextButton이 아닐 때만 toggle
-  }
-
-  // 선택된 공간 버튼 개수 확인
-  const selectedSpacesCount = document.querySelectorAll(
-    '#shooting-space-question button.selected'
-  ).length;
-
-  // 버튼이 하나라도 선택되면 "다음" 버튼 표시, 아니면 숨김
-  if (selectedSpacesCount > 0) {
-    spaceNextButton.style.display = 'flex'; // 표시
-    anime({
-      targets: spaceNextButton,
-      opacity: [0, 1],
-      duration: 600,
-      easing: 'easeInOutExpo'
-    });
-  } else {
-    anime({
-      targets: spaceNextButton,
-      opacity: [1, 0],
-      duration: 600,
-      easing: 'easeInOutExpo',
-      complete: () => {
-        spaceNextButton.style.display = 'none'; // 숨김
-      },
-    });
-  }
-
-  // 이후 질문들 숨기기 및 초기화 (수정된 부분)
-  if (button.id !== 'space-next-button') { //일반 버튼을 눌렀을 때에만, 즉, '다음'버튼이 아닌경우
-        if (equipmentQuestion.style.display !== 'none') {
-            hideQuestionWithAnimation(equipmentQuestion);
-        }
-        if (textEffectQuestion.style.display !== 'none') {
-            hideQuestionWithAnimation(textEffectQuestion);
-        }
-        // 이부분 수정
-        if (distanceQuestion.style.display !== 'none') {
-          hideQuestionWithAnimation(distanceQuestion);
-        }
-      resetQuestion('equipment-question');
-      resetQuestion('text-effect-question');
-      resetQuestion('distance-question');
-  }
-  nextQuestionShown = false;
-
-  updateContactButtonState();
-  updateTotalPrice();
+/* 이미 #white-overlay에 스타일이 inline으로 적용되어 있지만, 명시적으로 CSS에 추가해도 좋습니다. */
+#white-overlay {
+  display: none; /* 초기에는 숨김 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  z-index: 9999;
 }
 
-// spaceNextButton 클릭 이벤트 리스너 (로직 수정, 애니메이션 유지)
-spaceNextButton.addEventListener('click', function(event) {
-  setTimeout(function() {
-    const selectedSpaces = Array.from(document.querySelectorAll('#shooting-space-question button.selected')).map(b => b.dataset.space);
-
-    const showEquipmentQuestion = selectedSpaces.includes('indoor') || selectedSpaces.includes('outdoor');
-    const showTextEffectQuestion = selectedSpaces.length === 1 && selectedSpaces[0] === 'drone';
-
-    // 텍스트 효과 초기화 로직 추가
-    selectedTextEffects = []; // selectedTextEffects 배열 초기화
-    textEffectButtons.forEach(button => {
-      button.classList.remove('selected'); // 모든 텍스트 효과 버튼에서 'selected' 클래스 제거
-    });
-    updateTextEffectNextButtonState(); // 텍스트 효과 다음 버튼 상태 업데이트 (숨김)
-
-
-    if (showEquipmentQuestion) {
-      equipmentQuestion.style.display = 'block';
-      showQuestionWithAnimation(equipmentQuestion);
-      if (selectedSpaces.includes('indoor') && selectedSpaces.includes('outdoor')) {
-        equipmentQuestionLocation.textContent = '실내/실외';
-      } else if (selectedSpaces.includes('indoor')) {
-        equipmentQuestionLocation.textContent = '실내';
-      } else {
-        equipmentQuestionLocation.textContent = '실외';
-      }
-      // selectedEquipment 값에 따라 버튼 상태 복원
-      if (selectedEquipment) {
-        equipmentButtons.forEach(button => {
-          if (button.dataset.equipment === selectedEquipment) {
-            button.classList.add('selected');
-          }
-        });
-      }
-
-      nextQuestionShown = true; // 다음 질문 표시 상태로 변경
-    } else if (showTextEffectQuestion) {
-      textEffectQuestion.style.display = 'block';
-
-      // selectedTextEffects 배열에 따라 버튼 클래스 설정/해제 (selectedTextEffects 복원)  -> 이 부분은 위에서 초기화 했으므로 제거
-      // textEffectButtons.forEach(button => {
-      //  if (selectedTextEffects.includes(button.dataset.effect)) {
-      //   button.classList.add('selected');
-      //  } else {
-      //   button.classList.remove('selected');
-      //  }
-      // });
-
-      showQuestionWithAnimation(textEffectQuestion);
-
-      nextQuestionShown = true; // 다음 질문 표시 상태로 변경
-
-      // 텍스트 효과 "다음" 버튼 표시 여부 (복원) -> 위에서 updateTextEffectNextButtonState() 호출로 대체
-      // if (selectedTextEffects.length > 0) {
-      //  textEffectNextButton.style.display = 'block';
-      // } else {
-      //  textEffectNextButton.style.display = 'none';
-      // }
-
-    } else { //추가 :  showEquipmentQuestion,showTextEffectQuestion 둘 다 false일 때
-      distanceQuestion.style.display = 'block';
-      resetQuestion('distance-question'); // distance-question 리셋 (입력값 유지)
-      showQuestionWithAnimation(distanceQuestion);
-      nextQuestionShown = true; // 다음 질문 표시 상태로 변경
-    }
-
-    anime({
-      targets: spaceNextButton,
-      opacity: [1, 0],
-      duration: 1000,
-      complete: () => {
-        spaceNextButton.style.display = 'none'; // 숨김
-        // pointerEvents 관련 코드 제거
-      },
-    });
-
-    updateTotalPrice();
-    scrollToBottom();
-  }, 0);
-});
-
-textEffectNextButton.addEventListener('click', function(event) {
-  setTimeout(function() {
-    distanceQuestion.style.display = 'block';
-    resetQuestion('distance-question'); // distance-question 리셋 (입력값 유지)
-    showQuestionWithAnimation(distanceQuestion);
-
-    anime({
-      targets: textEffectNextButton,
-      opacity: [1, 0],
-      duration: 1000,
-      complete: () => {
-        textEffectNextButton.style.display = 'none'; // 숨김
-        // pointerEvents 관련 코드 제거
-      },
-    });
-
-    updateTotalPrice();
-    scrollToBottom();
-    updateContactButtonState();
-  }, 0);
-});
-
-// 질문을 애니메이션과 함께 숨기는 함수
-function hideQuestionWithAnimation(questionElement) {
-    anime({
-        targets: questionElement,
-        translateY: [0, 20],
-        opacity: [1, 0],
-        duration: 500,
-        easing: 'easeOutExpo',
-        complete: () => {
-            questionElement.style.display = 'none';
-
-            // === 이동 거리 질문이 숨겨질 때 견적 초기화 ===
-            if (questionElement.id === 'distance-question') {
-                // distanceInput.value = ''; // 이 부분을 삭제하거나 주석처리!
-                distanceResultButton.style.display = 'none'; // 결과 버튼 숨김
-                isDistanceEntered = false; // 이동 거리 입력 상태 초기화
-                updateTotalPrice(); // 견적 업데이트
-            }
-        }
-    });
+/* GIF 애니메이션 정의 (프레임 수에 따라 조정) */
+@keyframes playGif {
+  from { background-position: 0 0; }
+  to { background-position: -100% 0; } /* GIF 스프라이트 이미지일 경우 */
 }
 
-// 질문을 애니메이션과 함께 표시하는 함수
-function showQuestionWithAnimation(questionElement) {
-    anime({
-        targets: questionElement,
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 1000,
-        easing: 'easeOutExpo',
-        complete: () => {
-            questionElement.style.pointerEvents = 'auto'; // 추가: 포인터 이벤트 활성화
-        },
-    });
-}
-  
-// distanceButton에 대한 클릭 이벤트 리스너 (수정)
-distanceButton.addEventListener('click', () => {
-  if (distanceInput.value === '' || isNaN(distanceInput.value) || distanceInput.value < 0) {
-    alert('올바른 거리를 입력해주세요.');
-    distanceInput.focus();
-    return;
-  }
-
-  const distance = parseInt(distanceInput.value, 10);
-  let extraCost = 0;
-  let extraCostInTenThousands = 0;
-
-  if (distance > 30) {
-    if (distance <= 100) {
-      extraCost = (distance - 30) * 1500;
-    } else {
-      extraCost = (70 * 1500) + ((distance - 100) * 800);
-    }
-
-    extraCostInTenThousands = extraCost / 10000; // toFixed()를 적용하지 않음
-
-    // extraCostInTenThousands 값 후처리 로직 (기존 로직)
-    if (extraCostInTenThousands === Math.floor(extraCostInTenThousands)) {
-      // 정수 부분만 있는 경우 (소수점이 없는 경우)
-      extraCostInTenThousands = extraCostInTenThousands.toFixed(0);
-    } else {
-      // 소수점이 있는 경우
-      extraCostInTenThousands = extraCostInTenThousands.toFixed(2); // 일단 소수점 둘째자리까지
-      if (extraCostInTenThousands.endsWith(".00")) {
-        extraCostInTenThousands = extraCostInTenThousands.slice(0, -3); // .00 제거
-      } else if (extraCostInTenThousands.endsWith("0")) {
-        extraCostInTenThousands = extraCostInTenThousands.slice(0, -1);  // 마지막 0 제거
-      }
-    }
-  }
-
-
-  distanceInput.style.display = 'none';
-  document.querySelector('#distance-question .unit').style.display = 'none';
-  distanceButton.style.display = 'none';
-
-  distanceResultText.textContent = `${distance}Km`;
-  distanceResultButton.querySelector('.price-circle').textContent = extraCostInTenThousands;
-  distanceResultButton.style.display = 'block';
-
-  anime({
-    targets: distanceResultButton,
-    opacity: [0, 1],
-    duration: 600,
-    easing: 'easeInOutExpo',
-  });
-
-  isDistanceEntered = true; // 입력 완료 상태 저장
-  updateTotalPrice();
-  updateContactButtonState(); // 수정된 함수 반영
-});
-
-// distanceResultButton에 대한 클릭 이벤트 리스너 (수정)
-distanceResultButton.addEventListener('click', () => {
-  distanceResultButton.style.display = 'none'; // 결과 버튼 숨김
-  distanceInput.style.display = '';        // 입력 필드 보임
-  document.querySelector('#distance-question .unit').style.display = ''; // "Km" 텍스트 보임
-  distanceButton.style.display = '';        // 입력 버튼 보임
-
-  distanceInput.focus(); // 입력 필드에 포커스
-  distanceInput.select(); // 입력 필드의 내용 전체 선택
-
-  // ******추가: 문의하기 버튼 비활성화******
-  contactButton.disabled = true;
-  contactButton.classList.add('disabled-button');
-  contactButton.textContent = "선택을 모두 완료해주세요";
-  contactButton.onclick = null; //클릭이벤트 제거
-});
-
-// handleEquipmentButtonClick 함수 (수정)
-function handleEquipmentButtonClick(event) {
-  const button = event.currentTarget;
-  const isSelected = button.classList.contains('selected');
-
-  equipmentButtons.forEach(b => b.classList.remove('selected'));
-
-  if (!isSelected) { // 이미 선택된 상태가 아니었을 때만
-    button.classList.add('selected');
-    selectedEquipment = button.dataset.equipment; // 전역 변수에 저장
-  } else {
-      selectedEquipment = null; // 선택 해제 시 전역 변수 초기화
-  }
-
-    // 기존 로직 (텍스트 효과 질문 표시 등)
-    if (!isSelected){ //
-        textEffectQuestion.style.display = 'block';
-        showQuestionWithAnimation(textEffectQuestion);
-    } else {
-        hideQuestionWithAnimation(textEffectQuestion);
-        resetQuestion('text-effect-question');
-    }
-
-    updateTotalPrice();
-    scrollToBottom();
-    updateContactButtonState();
-    textEffectQuestion.style.pointerEvents = 'auto'; // 추가: 포인터 이벤트 활성화
+.hidden-gif {
+    visibility: hidden; /* 보이지 않지만 자리 유지 */
 }
 
-// handleTextEffectButtonClick 함수 (수정)
-function handleTextEffectButtonClick(event) {
-    const clickedButton = event.currentTarget;
-    clickedButton.classList.toggle('selected');
-
-    selectedTextEffects = Array.from(
-        document.querySelectorAll('#text-effect-question button.selected')
-    ).map(b => b.dataset.effect);
-
-    updateTotalPrice();
-    updateContactButtonState(); // 버튼 상태 업데이트
-
-    // ✅ 이동거리 질문을 숨기는 코드 제거!
+/* -------------------------------------------------- fixed-buttons -------------------------------------------------- */
+/* 버전명을 표시하는 컨테이너 */
+#version-container {
+    display: fixed !important;
+    transform-origin: center center; /* 또는 transform-origin: 50% 50%; */
+    text-align: center !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    position: fixed;
+    padding: 0.15rem 0.5rem 0rem 0.5rem;
+    top: 1rem;
+    right: 1.25rem;
+    color: #FFFFFF; /* 텍스트 색상 */
+    background-color: #777777;
+    border-radius: 2rem;
+    opacity: 0.5;
+    z-index: 1001; /* 고정 버튼 컨테이너보다 위에 표시 */
 }
 
-// 견적 업데이트 시 영수증에도 반영하는 함수 (수정)
-function updateReceipt() {
-  receiptTotalPrice.textContent = document.getElementById("total-price").textContent;
-
-  const receiptItems = document.getElementById("receipt-items");
-  receiptItems.innerHTML = ""; // 기존 내용 초기화
-
-  const categoryGroups = {}; // 카테고리별 항목 그룹
-
-  // 각 항목 추가 시 카테고리별 그룹에 저장
-  function addReceiptItem(category, detail, price) {
-    if (!categoryGroups[category]) {
-      categoryGroups[category] = [];
-    }
-    categoryGroups[category].push({ detail, price });
-  }
-
-  // 1. 영상 방향
-  const selectedVideoFormatButton = document.querySelector("#video-format-question button.selected");
-  if (selectedVideoFormatButton) {
-    addReceiptItem("영상 방향", selectedVideoFormatButton.dataset.label, (parseInt(selectedVideoFormatButton.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
-  }
-
-  // 2. 러닝 타임
-  const selectedRunningTimeOption = runningTimeSelect.options[runningTimeSelect.selectedIndex];
-  if (selectedRunningTimeOption && selectedRunningTimeOption.value) {
-    const runningTimeText = selectedRunningTimeOption.dataset.label;
-    const runningTimePrice = (parseFloat(selectedRunningTimeOption.value) * 10000).toLocaleString('ko-KR') + "원";
-    addReceiptItem("러닝 타임", runningTimeText, runningTimePrice);
-  }
-
-  // 3. 촬영 공간
-  const selectedSpaceButtons = document.querySelectorAll("#shooting-space-question button.selected");
-  selectedSpaceButtons.forEach((button) => {
-    addReceiptItem("촬영 공간", button.dataset.label, (parseInt(button.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
-  });
-
-  // 4. 무빙 퀄리티
-  const selectedEquipmentButton = document.querySelector("#equipment-question button.selected");
-  if (selectedEquipmentButton) {
-    addReceiptItem("무빙 퀄리티", selectedEquipmentButton.dataset.label, (parseInt(selectedEquipmentButton.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
-  }
-
-  // 5. 텍스트 효과
-  const selectedTextEffectButtons = document.querySelectorAll("#text-effect-question button.selected");
-  selectedTextEffectButtons.forEach((button) => {
-    if (button.id !== 'text-effect-next-button') {
-      addReceiptItem("텍스트 효과", button.dataset.label, (parseInt(button.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
-    }
-  });
-
-  // 6. 이동 거리 및 추가 비용 (수정된 부분)
-  if (isDistanceEntered) {
-    const distance = parseInt(distanceInput.value, 10) || 0;
-    if (distance > 30) {
-        let extraDistanceDetail = "";
-        let extraCost = 0;
-
-        if(distance <= 100){
-          extraDistanceDetail = `(+${distance - 30}km)`;
-          extraCost = (distance - 30) * 1500;
-        } else {
-          extraDistanceDetail = `(+70km, +${distance - 100}km)`; //30km초과 100km이하, 100km초과 거리 표시
-          extraCost = (70 * 1500) + ((distance - 100) * 800);
-        }
-
-        addReceiptItem("이동 거리", `${distance}km ${extraDistanceDetail}`, `${extraCost.toLocaleString('ko-KR')}원`);
-
-    } else if (distance <= 30 && distance > 0) {
-      addReceiptItem("이동 거리", `${distance}km`, `0원`);
-    }
-  }
-
-  // 그룹별 항목 표시 (기존 코드)
-  for (const category in categoryGroups) {
-    const itemDiv = document.createElement("div");
-    itemDiv.classList.add("receipt-item");
-
-    let innerHTML = `<span class="item-category">${category}</span>`;
-    const items = categoryGroups[category];
-
-    if (items.length > 1) { // 항목이 2개 이상일 경우
-      innerHTML += `<span class="item-detail">${items[0].detail}</span><span class="item-price">${items[0].price}</span>`; // 첫 번째 항목만 표시
-
-      for (let i = 1; i < items.length; i++) {
-        // 1열 텍스트만 숨김 처리
-        innerHTML += `<span class="item-category hidden-text">${category}</span><span class="item-detail">${items[i].detail}</span><span class="item-price">${items[i].price}</span>`;
-      }
-    } else { // 항목이 1개일 경우
-      innerHTML += `<span class="item-detail">${items[0].detail}</span><span class="item-price">${items[0].price}</span>`;
-    }
-
-    itemDiv.innerHTML = innerHTML;
-    receiptItems.appendChild(itemDiv);
-  }
+/* 고정 버튼 스타일 */
+#screen-width-container {
+    display: fixed !important;
+    transform-origin: center center; /* 또는 transform-origin: 50% 50%; */
+    text-align: center !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    position: fixed;
+    padding: 0.15rem 0.5rem 0rem 0.5rem;
+    top: 2.4rem;
+    right: 1.25rem;
+    color: #FFFFFF; /* 텍스트 색상 */
+    background-color: #777777;
+    border-radius: 2rem;
+    opacity: 0.5;
+    z-index: 1001; /* 고정 버튼 컨테이너보다 위에 표시 */
 }
 
-// 총 견적 업데이트 함수
-function updateTotalPrice() {
-  let totalPrice = 0;
-
-  // 영상 방향
-  const selectedVideoFormatButton = document.querySelector('#video-format-question button.selected');
-  if (selectedVideoFormatButton) {
-    totalPrice += parseInt(selectedVideoFormatButton.dataset.price, 10) || 0;
-  }
-
-  // 러닝 타임
-  totalPrice += parseFloat(runningTimeSelect.value) || 0;
-
-  // 촬영 공간
-  const selectedSpaceButtons = document.querySelectorAll('#shooting-space-question button.selected');
-  selectedSpaceButtons.forEach(button => {
-    totalPrice += parseInt(button.dataset.price, 10) || 0;
-  });
-
-  // 무빙 퀄리티
-  const selectedEquipmentButton = document.querySelector('#equipment-question button.selected');
-  if (selectedEquipmentButton) {
-    totalPrice += parseInt(selectedEquipmentButton.dataset.price, 10) || 0;
-  }
-
-  // 텍스트 효과
-  const selectedTextEffectButtons = document.querySelectorAll('#text-effect-question button.selected');
-  selectedTextEffectButtons.forEach(button => {
-    totalPrice += parseInt(button.dataset.price, 10) || 0;
-  });
-
-  // 이동 거리 추가 비용 계산 (수정된 부분)
-  if (isDistanceEntered) {
-    const distance = parseInt(distanceInput.value, 10) || 0;
-
-    if (distance > 30) {
-      let extraCost = 0;
-      if (distance <= 100) {
-        // 30km 초과, 100km 이하: km당 1500원
-        extraCost = (distance - 30) * 1500;
-      } else {
-        // 100km 초과: 30~100km 구간 + 100km 초과 구간
-        extraCost = (70 * 1500) + ((distance - 100) * 800);
-      }
-      totalPrice += extraCost / 10000; // 만원 단위로 변환하여 더함
-    }
-  }
-
-  // 수정된 부분: * 10000 제거, toLocaleString 적용, 소수점 이하 제거
-  document.getElementById('total-price').textContent = `${(totalPrice * 10000).toLocaleString('ko-KR', { minimumFractionDigits: 0 })}원`; // 만원 단위로 수정
-  updateReceipt(); // 영수증 업데이트
+#fixed-buttons {
+    position: fixed;
+    bottom: 6rem;
+    right: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    z-index: 1000;
 }
 
-// 2. resetQuestion('distance-question') 함수 수정
-function resetQuestion(questionId) {
-  switch (questionId) {
-    case 'equipment-question':
-      equipmentButtons.forEach(b => b.classList.remove('selected'));
-      selectedEquipment = null;
-      break;
-    case 'text-effect-question':
-      selectedTextEffects = [];
-      textEffectButtons.forEach(button => {
-
-        button.classList.remove('selected');
-      });
-      break;
-    case 'distance-question':
-      // distanceInput.value = '';  // 이 줄은 제거! 값을 유지합니다.
-      // distanceInput.setAttribute('value', ''); // 이 줄도 제거!
-
-      // 기존 요소들 다시 표시
-      distanceInput.style.display = '';
-      document.querySelector('#distance-question .unit').style.display = '';
-      distanceButton.style.display = '';
-      // 새 버튼 숨김
-      distanceResultButton.style.display = 'none';
-      isDistanceEntered = false; // 유지: isDistanceEntered를 false로 설정
-      break;
-  }
+#fixed-buttons button {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  width: 3.125rem;
+  height: 3.125rem;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease-in-out;
 }
 
-// 스크롤을 부드럽게 아래로 이동시키는 함수 (anime.js 사용)
-function scrollToBottom() {
-
-    const targetScrollTop = document.body.scrollHeight - window.innerHeight;
-    anime({
-        targets: 'html, body',
-        scrollTop: targetScrollTop,
-        duration: 1000,
-        easing: 'easeOutExpo'
-    });
+#fixed-buttons button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.3);
+  filter: brightness(0.8) contrast(1.4) saturate(0.9); /* 밝기를 80%로 줄이고, 대비를 120%로 늘림 */
 }
 
-// 페이지 상단으로 스크롤하는 함수
-function scrollToTop(smooth) {
-    if (smooth) {
-        anime({
-            targets: 'html, body',
-            scrollTop: 0,
-            duration: 1000,
-            easing: 'easeOutExpo'
-        });
-    } else {
-        window.scrollTo({
-            top: 0,
-            behavior: 'auto'
-        });
-    }
+#fixed-buttons button#refresh-button {
+  background-color: #007bff;
+  margin-bottom: 1.25rem;
 }
 
-// handleTextEffectNextButtonClick 함수 추가
-function handleTextEffectNextButtonClick() {
-  // 다음 질문 (distanceQuestion) 표시 (showTextEffectQuestion 조건 제거)
-  distanceQuestion.style.display = 'block';
-  showQuestionWithAnimation(distanceQuestion);
+/* ---------------------------------------------------- fixed-buttons ---------------------------------------------------- */
 
-  // textEffectNextButton 숨기기 (애니메이션 확인)
-  anime({
-	  targets: textEffectNextButton,
-	  opacity: [1, 0],
-	  duration: 1000,
-	  easing: 'easeInOutExpo',
-	  complete: () => {
-		  textEffectNextButton.style.display = 'none'; // 애니메이션 완료 후 display: none
-		  textEffectNextButton.style.pointerEvents = 'auto'; // 추가: 포인터 이벤트 활성화
-	  },
-  });
-
-  updateTotalPrice();
-  scrollToBottom();
-  updateContactButtonState();
+/* -------------------------------------------------- united-question-format -------------------------------------------------- */
+#video-format-question label,
+#running-time-question label,
+#shooting-space-question label {
+  margin-bottom: 0;
 }
 
-// 전역 변수: 각 텍스트 효과 버튼에 연결된 이벤트 리스너를 저장할 객체
-const textEffectButtonListeners = {};
-
-// handleTextEffectButtonClick 함수 (클로저 사용, 리스너 저장)
-function handleTextEffectButtonClick(button) { // button 매개변수 추가
-  return function(event) { // 클로저 반환
-    const noneButton = textEffectQuestion.querySelector('[data-effect="none"]');
-    const clickedButton = event.currentTarget;
-    const clickedEffect = clickedButton.dataset.effect;
-
-    if (clickedEffect === 'none') {
-      if (clickedButton.classList.contains('selected')) {
-        clickedButton.classList.remove('selected');
-        selectedTextEffects = [];
-      } else {
-        clickedButton.classList.add('selected');
-        textEffectButtons.forEach(b => {
-          if (b !== noneButton) b.classList.remove('selected');
-        });
-        selectedTextEffects = ['none'];
-      }
-    } else {
-      clickedButton.classList.toggle('selected');
-
-      const hasNormalOrSpatial =
-        textEffectQuestion.querySelector('[data-effect="normal"].selected') ||
-        textEffectQuestion.querySelector('[data-effect="spatial"].selected');
-
-      if (hasNormalOrSpatial) {
-        noneButton.classList.remove('selected');
-      }
-
-      selectedTextEffects = Array.from(
-        document.querySelectorAll('#text-effect-question button.selected')
-      ).map(b => b.dataset.effect);
-    }
-
-    // 다음 버튼 표시/숨김 로직
-    const hasSelected = selectedTextEffects.length > 0; // selectedTextEffects 사용
-      if (hasSelected) {
-        textEffectNextButton.style.display = 'block';
-        anime.remove(textEffectNextButton);
-        anime({
-          targets: textEffectNextButton,
-          opacity: [0, 1],
-          duration: 300,
-          easing: 'easeInOutExpo',
-        });
-      } else {
-        anime.remove(textEffectNextButton);
-        anime({
-          targets: textEffectNextButton,
-          opacity: [1, 0],
-          duration: 300,
-          easing: 'easeInOutExpo',
-          complete: () => {
-            textEffectNextButton.style.display = 'none';
-          }
-        });
-      }
-
-
-    if (distanceQuestion.style.display !== 'none') {
-      hideQuestionWithAnimation(distanceQuestion);
-
-    }
-
-    updateTotalPrice();
-    updateContactButtonState();
-  }
+#result {
+  margin-top: 0rem;
+  font-size: 1.125rem;
+  text-align: center;
 }
 
-// 모든 버튼이 선택 해제되었을 때 "다음 버튼" 숨기기
-function updateTextEffectNextButton() {
-    if (document.querySelectorAll('#text-effect-question button.selected').length === 0) {
-        textEffectNextButton.style.display = 'none';
-    }
+.price-circle {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ff9800;
+  color: white;
+  min-width: 1.875rem;
+  padding: 0 0.3125rem;
+  padding-left: 0.21rem;
+  padding-right: 0.25rem;
+  line-height: 1.875rem;
+  text-align: center !important;
+  font-size: 0.95rem;
+  margin-left: 0.3rem;
+  font-weight: bold;
+  vertical-align: middle;
+  border-radius: 0.75rem;
 }
 
-// 이벤트 리스너 추가 (버튼 클릭 시 마다 `updateTextEffectNextButton` 실행)
-textEffectButtons.forEach(button => {
-    button.addEventListener('click', updateTextEffectNextButton);
-});
+.price-circle::before {
+  content: "";
+  display: inline-block;
+}
 
-// 이벤트 리스너 등록 (handleTextEffectButtonClick을 클로저로 사용)
-textEffectButtons.forEach(button => {
-  const listener = handleTextEffectButtonClick(button); // 클로저 생성 및 button 전달
-  textEffectButtonListeners[button.dataset.effect] = listener; // 리스너 저장
-  button.addEventListener('click', listener);
-});
+.price-circle:not(.circle)::before {
+  content: "  ";
+}
 
-// 영수증 내용 업데이트 함수
-function updateReceiptModal() {
-    const receiptModalItems = document.getElementById("receipt-modal-items");
-    receiptModalItems.innerHTML = ""; // 기존 내용 초기화
+/* ---------------------------------------------------- united-format ---------------------------------------------------- */
 
-    const receiptModalLine = document.getElementById('receipt-modal-line');
-    receiptModalLine.style.display = 'block'; // 확실하게 보이도록
+/* ---------------------------------------------------- video-format ---------------------------------------------------- */
+#video-format-question {
+  margin-top: 1.25rem;
+  margin-bottom: 0.625rem;
+}
 
-    const receiptModalLine2 = document.getElementById('receipt-modal-line2'); // 추가
-    receiptModalLine2.style.display = 'block'; // 추가: 두 번째 점선도 보이게
+#format.description {
+    margin-top: -1rem;
+    margin-bottom: 1.7rem;
+}
 
-    const categoryGroups = {}; // 카테고리별 항목 그룹
+#video-format-question button {
+  font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+  font-weight: 700; /* 또는  normal;  기본값 */
+  margin-left: 0;
+  margin-right: 0.4rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.45rem;
+  padding: 0.625rem 1.875rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 1.5625rem;
+  background-color: #e9ecef;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
-    // 각 항목 추가 시 카테고리별 그룹에 저장
-    function addReceiptItem(category, detail, price) {
-        if (!categoryGroups[category]) {
-            categoryGroups[category] = [];
-        }
-        categoryGroups[category].push({ detail, price });
-    }
+#video-format-question button.horizontal {
+ padding-left: 4rem;
+ padding-right: 4rem;
+}
 
-    // 1. 영상 방향
-    const selectedVideoFormatButton = document.querySelector("#video-format-question button.selected");
-    if (selectedVideoFormatButton) {
-        addReceiptItem("영상 방향", selectedVideoFormatButton.dataset.label, (parseInt(selectedVideoFormatButton.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
-    }
+#video-format-question button.vertical {
+ padding-left: 0.9rem;
+ padding-right: 0.7rem;
+}
 
-    // 2. 러닝 타임
-    const selectedRunningTimeOption = runningTimeSelect.options[runningTimeSelect.selectedIndex];
-    if (selectedRunningTimeOption && selectedRunningTimeOption.value) {
-        const runningTimeText = selectedRunningTimeOption.dataset.label;
-        const runningTimePrice = (parseFloat(selectedRunningTimeOption.value) * 10000).toLocaleString('ko-KR') + "원";
-        addReceiptItem("러닝 타임", runningTimeText, runningTimePrice);
-    }
+#video-format-question button:hover {
+  background-color: #ced4da;
+  transform: translateY(-2px);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+}
 
-    // 3. 촬영 공간
-    const selectedSpaceButtons = document.querySelectorAll("#shooting-space-question button.selected");
-    selectedSpaceButtons.forEach((button) => {
-        addReceiptItem("촬영 공간", button.dataset.label, (parseInt(button.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
-    });
+#video-format-question button.selected {
+  background-color: #006cff;
+  color: white;
+}
 
-    // 4. 무빙 퀄리티
-    const selectedEquipmentButton = document.querySelector("#equipment-question button.selected");
-    if (selectedEquipmentButton) {
-        addReceiptItem("무빙 퀄리티", selectedEquipmentButton.dataset.label, (parseInt(selectedEquipmentButton.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
-    }
+/* ---------------------------------------------------- video-format ---------------------------------------------------- */
 
-    // 5. 텍스트 효과
-	const selectedTextEffectButtons = document.querySelectorAll("#text-effect-question button.selected");
-	selectedTextEffectButtons.forEach((button) => {
-		// 다음 버튼(textEffectNextButton)은 무시하도록 조건 추가
-		if (button.id !== 'text-effect-next-button') {
-			addReceiptItem("텍스트 효과", button.dataset.label, (parseInt(button.dataset.price) * 10000).toLocaleString('ko-KR') + "원");
-		}
-	});
+/* ---------------------------------------------------- running-time ---------------------------------------------------- */
+#running-time-question {
+  margin-top: 5rem;
+  margin-bottom: 0.625rem;
+  /* opacity, transform, visibility, transition 제거 */
+  display: none; /* 초기에는 숨김 */
+}
 
-    // 6. 이동 거리 및 추가 비용 (수정된 부분)
-    if (isDistanceEntered) {
-        const distance = parseInt(distanceInput.value, 10) || 0;
-        if (distance > 30) {
-            let extraDistanceDetail = "";
-            let extraCost = 0;
-            if(distance <= 100){
-                extraDistanceDetail = `(+${distance - 30}km)`;
-                extraCost = (distance - 30) * 1500;
-            }
-            else{
-                extraDistanceDetail = `(+70km, +${distance - 100}km)`; //30km초과 100km이하, 100km초과 거리 표시
-                extraCost = (70 * 1500) + ((distance - 100) * 800);
-            }
-            addReceiptItem("이동 거리", `${distance}km ${extraDistanceDetail}`, `${extraCost.toLocaleString('ko-KR')}원`);
-        }
-        else if (distance <= 30 && distance > 0){
-            addReceiptItem("이동 거리", `${distance}km`, `0원`);
-        }
-    }
+#running-time-question.show {
+ /* opacity, transform, transition, display 제거. anime.js가 처리 */
+}
 
-    // 그룹별 항목 표시
-    for (const category in categoryGroups) {
-        const itemDiv = document.createElement("div");
-        itemDiv.classList.add("receipt-item");
+#running-time-question select {
+  margin-top: 1.25rem;
+}
 
-        let innerHTML = `<span class="item-category">${category}</span>`;
-        const items = categoryGroups[category];
+#running-time-button {
+  font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+  font-weight: 700;
+  margin: 0.625rem 0;
+  padding: 0.625rem 1.875rem;
+  padding-left: 1.6rem;
+  padding-right: 1.3rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 1.5625rem;
+  background-color: #006cff;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 0;
+  margin-right: 0.9375rem;
+  margin-bottom: 5rem;
+  margin-top: 1.5rem;
+}
 
-        if (items.length > 1) {
-            innerHTML += `<span class="item-detail">${items[0].detail}</span><span class="item-price">${items[0].price}</span>`;
+/* #running-time-button 내의 .price-circle 스타일 재정의 */
+#running-time-question.show #running-time-button .price-circle {
+  display: inline-flex; /* 또는 inline-block */
+  justify-content: center;
+  align-items: center;
+  background-color: #ff9800;
+  color: white;
+  min-width: 1.875rem;
+  padding: 0 0.3125rem;
+  line-height: 1.875rem;
+  text-align: center;
+  font-size: 0.875rem;
+  margin-left: 0.625rem;
+  font-weight: bold;
+  vertical-align: middle;
+  border-radius: 0.75rem;
+}
 
-            for (let i = 1; i < items.length; i++) {
-                innerHTML += `<span class="item-category hidden-text">${category}</span><span class="item-detail">${items[i].detail}</span><span class="item-price">${items[i].price}</span>`;
-            }
-        } else {
-            innerHTML += `<span class="item-detail">${items[0].detail}</span><span class="item-price">${items[0].price}</span>`;
-        }
+/* ---------------------------------------------------- running-time ---------------------------------------------------- */
 
-        itemDiv.innerHTML = innerHTML;
-        receiptModalItems.appendChild(itemDiv);
-    }
+/* ---------------------------------------------------- shooting-space ---------------------------------------------------- */
+#shooting-space-question {
+  margin-top: 6rem;
+  margin-bottom: -2rem;
+}
 
-    // 총 견적 업데이트
-    document.getElementById('receipt-modal-total-price').textContent = document.getElementById('total-price').textContent;
+#shooting-space-question button {
+  font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+  font-weight: 700;
+  margin: 0.3125rem;
+  padding: 0.625rem 1.25rem;
+  padding-left: 2.1rem;
+  padding-right: 1.7rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 1.5625rem;
+  background-color: #e9ecef;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 0rem;
+  margin-right: 0.4rem;
+}
 
-  // ****** 여기에 스크롤 애니메이션 코드 추가 ******
-/*  anime({
-    targets: receiptModalItems,
-    scrollTop: receiptModalItems.scrollHeight,
-    duration: 300,
-    easing: 'easeInOutQuad'
-  }); */
+#shooting-space-question button.drone {
+ padding-left: 0.9rem;
+ padding-right: 0.7rem;
+}
+
+#shooting-space-question button:hover {
+  background-color: #ced4da;
+  transform: translateY(-2px);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+}
+
+#shooting-space-question button.selected {
+  background-color: #006cff;
+  color: white;
+}
+
+/* ---------------------------------------------------- shooting-space ---------------------------------------------------- */
+
+/* ---------------------------------------------------- space-next-button ---------------------------------------------------- */
+#space-next-button {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 700;
+    margin-top: 0.2em !important; /* 버튼 위쪽 여백 */
+    padding: 0.65rem 1.4rem 0.5rem 1.45rem !important;
+    font-size: 0.85rem !important;
+    border: none;
+    border-radius: 1.5625rem;
+    background-color: #e9ecef; /* 파란색 배경 */
+    color: white;
+    cursor: pointer;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; /* opacity와 transform에 transition 적용 */
+    opacity: 1; /* 초기에는 보이도록 */
+    position: relative; /* 또는 position: fixed; */
+    z-index: 9999; /* 가장 높은 z-index 값 */
+}
+
+/* "다음" 버튼을 감싸는 컨테이너 (예: div)에 적용 */
+#space-next-button-container {
+	height: 50px; /* 예시: 고정 높이 */
+	overflow: hidden; /* 버튼이 숨겨질 때 내용이 넘치는 것을 방지 (선택 사항) */
+    position: relative; /* 또는 position: fixed; */
+    z-index: 9999; /* 가장 높은 z-index 값 */
+}
+
+/* ---------------------------------------------------- space-next-button ---------------------------------------------------- */
+
+/* ---------------------------------------------------- equipment ---------------------------------------------------- */
+#equipment-question {
+  margin-top: 5rem;
+  margin-bottom: 0.8rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+#equipment-question label {
+  margin-bottom: 0;
+}
+
+.equipment-description {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 500;
+    margin-top: -0.75rem;
+    margin-bottom: 1.3rem;
+    font-size: 0.85rem;
+    color: #777777 !important;
+	margin-left: 0rem;
+    line-height: 1.3rem;
+    opacity: 1 !important;
+}
+
+#deluxe.description {
+	color: #777777;
+	opacity: 0.8;
+	font-size: 0.8rem;
+	margin-top: 0.5rem;
+	margin-left: 0.5rem;
+	margin-bottom: -0.3rem;
+}
+
+#prime.description {
+	color: #777777;
+	opacity: 0.8;
+	font-size: 0.8rem;
+	margin-top: 0.2rem;
+	margin-left: 0.5rem;
+	margin-bottom: 0rem;
+}
+
+#equipment-question button {
+  font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+  font-weight: 700;
+  margin: 0.3125rem;
+  padding: 0.625rem 1.25rem;
+  padding-left: 1.5rem;
+  padding-right: 1.4rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 1.5625rem;
+  background-color: #e9ecef;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 0;
+  margin-right: 0.4rem;
+}
+
+#equipment-question button.standard {
+  padding-left: 1rem;
+  padding-right: 0.8rem;
+}
+
+#equipment-question button:hover {
+  background-color: #ced4da;
+  transform: translateY(-2px);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+}
+
+#equipment-question button.selected {
+  background-color: #006cff;
+  color: white;
+}
+
+/* ---------------------------------------------------- equipment ---------------------------------------------------- */
+
+/* ---------------------------------------------------- text-effect ---------------------------------------------------- */
+#text-effect-question {
+    margin-top: 6rem;
+    margin-bottom: -2rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.5rem;
+}
+
+#text-effect-question label {
+    margin-bottom: 0;
+    line-height: 1.6rem;
+}
+
+.description {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 500;
+	margin-top: -0.80rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.85rem;
+    color: #777777 !important;
+	margin-left: 0rem;
+    line-height: 1.3rem;
+}
+
+#spatial.description {
+	margin-bottom: 1.4rem;
+}
+
+#text-effect-question button[data-effect] {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 700;
+    margin: 0.3125rem;
+    padding: 0.625rem 1.25rem;
+    padding-left: 1rem;
+    padding-right: 0.85rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 1.5625rem;
+    background-color: #e9ecef;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 0;
+    margin-right: 0.4rem;
+    width: auto;
+}
+
+#text-effect-question button[data-effect]:hover {
+    background-color: #ced4da;
+    transform: translateY(-2px);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+}
+
+#text-effect-question button[data-effect].selected {
+    background-color: #006cff;
+    color: white;
+}
+
+/* ---------------------------------------------------- text-effect ---------------------------------------------------- */
+
+/* ---------------------------------------------------- distance ---------------------------------------------------- */
+/* 이동 거리 질문 컨테이너 */
+#distance-question {
+    margin-top: 5.7rem;
+    margin-bottom: 0.625rem;
+}
+
+#distance-question label {
+    margin-bottom: -1.3rem;
+    line-height: 1.6rem;
+}
+
+/* 숫자 입력 화살표 제거 (Chrome, Safari, Edge) */
+#distance-question input[type="number"]::-webkit-inner-spin-button,
+#distance-question input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* 숫자 입력 화살표 제거 (Firefox) */
+#distance-question input[type="number"] {
+    -moz-appearance: textfield;
+    width: 5rem;
+    margin-right: 0.5rem;
+    text-align: right;
+    font-size: 1.2rem;
+    color: #ffffff !important;
+    padding-right: 0.6rem;
+    background: #7A7A7A;
+    border-radius: 0.5rem;
+}
+
+/* Km 텍스트 스타일 */
+#distance-question .unit {
+    margin-right: 0.5rem; /* 입력 박스와 Km 텍스트 사이 간격 */
+    font-size: 1rem;       /* 필요에 따라 글꼴 크기 조절 */
+    font-weight: bold;    /* 필요에 따라 굵기 조절 */
+}
+
+#distance-question p {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 500;
+    margin-top: 1.8rem;
+    margin-bottom: 0rem;
+    font-size: 0.85rem;
+    color: #555555;
+	margin-left: 0rem;
+    line-height: 1.3rem;
+}
+
+#distance-question p2 {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 500;
+	color: #777777;
+	opacity: 0.8;
+	font-size: 0.8rem;
+	margin-left: 0.8rem;
+    line-height: -1rem;
+}
+
+#distance-question p3 {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 500;
+	color: #777777;
+	opacity: 0.8;
+	font-size: 0.8rem;
+    margin-left: 0.8rem;
+    margin-top: 10rem !important;
+}
+
+/* 입력 필드와 버튼을 가로로 배치 */
+#distance-question .input-container {
+	display: flex;
+	align-items: center;
+    margin-top: 1.8rem;
+    margin-bottom: 2rem;
+}
+
+#distance-question #distance-button {
+    font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+    font-weight: 700;
+    padding: 0.85rem 1.45rem 0.8rem 1.4rem !important;
+	margin-left: 0.5rem;
+    font-size: 1rem !important;
+    border: none;
+    border-radius: 1.5625rem;
+    background-color: #006cff; /* 파란색으로 변경 */
+    color: white; /* 흰색으로 변경 */
+    cursor: pointer;
+    transition: all 0.3s ease;
+	max-height: 2.1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center; /* 가로 중앙 정렬 (필요한 경우) */
 }
 
 
-// 오버레이 클릭 시 모달 닫기
-document.getElementById('overlay').addEventListener('click', function() {
-  // 1. 오버레이 비활성화 (opacity, pointer-events) - 애니메이션 추가
-  this.classList.remove('active');
-  anime({
-    targets: this,
-    opacity: [1, 0],
-    duration: 300,
-    easing: "easeInOutQuad",
-    complete: () => {
-        isContactButtonClicked = false; // 기존 코드
-    }
-  })
-
-  // 2. 영수증 모달 비활성화 (transform, opacity)
-  const receiptModal = document.getElementById('receipt-modal');
-  receiptModal.classList.remove('active');
-  anime({
-    targets: receiptModal,
-    translateY: ["0%", "100%"],
-    opacity: [1, 0],
-    duration: 300,
-    easing: "easeInOutQuad",
-    complete: () => {
-      receiptModal.style.display = 'none'; // 애니메이션 완료 후 숨김
-      isModalOpen = false; // 모달이 닫힐 때 플래그를 false로 설정
-    }
-  });
-});
-
-// 상담신청 버튼 클릭 시 모달이 닫히지 않도록 이벤트 전파 중단
-document.getElementById('modal-submit-button').addEventListener('click', function(event) {
-    event.stopPropagation(); // 상위 요소로의 이벤트 전파 중단
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const gifs = document.querySelectorAll(".button-gif");
-    const overlay = document.createElement("div");
-    const versionContainer = document.getElementById("version-text");
-    overlay.id = "gif-overlay";
-    overlay.style.opacity = "0";
-    overlay.style.transition = "opacity 0.2s ease-in-out, backdrop-filter 0.5s ease-in-out";
-    document.body.appendChild(overlay);
-
-    // 현재 <title>에서 버전 정보 (vX.XXX)만 추출
-    const pageTitle = document.title.match(/\(v[\d.]+\)/); // "(v8.701)" 형태 추출
-    if (pageTitle) {
-        versionContainer.textContent = pageTitle[0].replace(/[()]/g, ""); // "v8.701"만 표시
-    }
-
-	gifs.forEach(gif => {
-        gif.style.transition = "opacity 1.2s ease-in-out"; // 🔹 부드럽게 숨기기 위해 미리 설정
-	    
-        gif.addEventListener("click", (event) => {
-            const img = event.target;
-            const rect = img.getBoundingClientRect();
-            const clonedImg = img.cloneNode(); // 원본을 복제
-
-            // 🔹 다른 GIF 서서히 숨기기
-            gifs.forEach(otherGif => {
-                if (otherGif !== gif) {
-                    otherGif.style.opacity = "0";
-                }
-            });
-		
-            // 원본 이미지에는 .zoomed 추가 X
-            // 클론 이미지에만 .zoomed 추가
-            clonedImg.classList.add("zoomed");
-            clonedImg.style.position = "fixed";
-            clonedImg.style.left = `${rect.left}px`;
-            clonedImg.style.top = `${rect.top}px`;
-            clonedImg.style.width = `${rect.width}px`;
-            clonedImg.style.height = `${rect.height}px`;
-            clonedImg.style.transition = "all 0.75s ease-in-out, filter 0.75s ease-in-out"; // filter 추가
-            clonedImg.style.filter = "blur(50px)"; // 초기 블러 설정
-            clonedImg.style.zIndex = "10001";
-            clonedImg.style.objectFit = "contain";
-            clonedImg.style.cursor = "pointer";
-		
-            overlay.innerHTML = "";
-            overlay.appendChild(clonedImg);
-            overlay.style.display = "block";
-		
-            setTimeout(() => {
-                overlay.style.opacity = "1";
-                overlay.style.backdropFilter = "blur(10px)";
-                overlay.style.background = "rgba(0, 0, 0, 0.5)";
-                overlay.style.position = "fixed";
-                overlay.style.top = "0";
-                overlay.style.left = "0";
-                overlay.style.width = "100vw";
-                overlay.style.height = "100vh";
-                overlay.style.zIndex = "10000";
-                overlay.style.display = "flex";
-                overlay.style.justifyContent = "center";
-                overlay.style.alignItems = "center";
-            }, 10);
-
-            // 클론 이미지를 확대
-            setTimeout(() => {
-                clonedImg.style.left = "50%";
-                clonedImg.style.top = "50%";
-                clonedImg.style.transform = "translate(-50%, -50%)";
-                clonedImg.style.width = "101vw";
-                clonedImg.style.height = "101vh";
-                clonedImg.style.filter = "blur(0px)"; // 블러 제거
-            }, 100);
-        });
-    });
-
-    // 오버레이 클릭 시 닫기 (zoomed 클래스 제거)
-    overlay.addEventListener("click", () => {
-        const clonedImg = overlay.querySelector("img");
-        if (clonedImg) {
-            clonedImg.classList.remove("zoomed"); // 커진 이미지에서만 제거            
-            clonedImg.style.transition = "opacity 1s ease-in-out, filter 1s ease-in-out";
-            clonedImg.style.opacity = "0";
-            clonedImg.style.filter = "blur(50px)";
-            overlay.style.transition = "opacity 1s ease-in-out";
-            overlay.style.opacity = "0";
-		
-            // 1. 클론 이미지를 먼저 숨깁니다. (예: 100ms 후)
-            setTimeout(() => {
-                overlay.style.display = "none";
-                overlay.innerHTML = "";
-            }, 1000);
-            
-            // 2. 다른 GIF들을 딜레이를 주고 다시 보이게 합니다. (예: 1000ms 후)
-            setTimeout(() => {
-                gifs.forEach(gif => {
-                    gif.style.opacity = "1";
-                });
-            }, 0); 
-		
-        }
-    });
-});
-
-// ✅ 최종 질문 애니메이션 실행 함수
-function showFinalMessage() {
-    finalMessage.style.display = "block"; // 우선 표시
-    finalMessage.classList.remove("show"); // 초기화 후 다시 실행
-    setTimeout(() => {
-        finalMessage.classList.add("show"); // 애니메이션 적용
-    }, 500);
-
-    // ✅ 더 정확한 스크롤 위치 계산하여 자연스럽게 이동
-    setTimeout(() => {
-        const finalMessagePosition = finalMessage.getBoundingClientRect().top + window.scrollY;
-        const viewportHeight = window.innerHeight; // 현재 화면의 높이
-        const scrollTarget = finalMessagePosition - (viewportHeight / 2); // 중앙에 위치하도록 조정
-        const maxScroll = document.documentElement.scrollHeight - viewportHeight; // 최대 스크롤 값
-
-        anime({
-            targets: [document.documentElement, document.body], 
-            scrollTop: Math.min(scrollTarget, maxScroll), // 페이지를 초과해서 스크롤되지 않도록 제한
-            duration: 1600,  
-            easing: 'easeInOutCubic'
-        });
-    }, 500); 
+/* 버튼 hover, active 효과 (필요하면 수정) */
+#distance-question #distance-button:hover {
+    background-color: #0056b3; /* 더 어두운 파란색 */
+    transform: translateY(-2px);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
 }
 
-// ✅ distanceResultButton이 나타나면 finalMessage를 표시 (단, 문의하기 버튼이 활성화된 경우에만)
-const observer = new MutationObserver(() => {
-    if (
-        window.getComputedStyle(distanceResultButton).display !== 'none' && // 이동거리 버튼이 나타나고
-        !contactButton.disabled // 문의하기 버튼이 활성화된 경우만
-    ) {
-        showFinalMessage(); // 최종 질문 표시 + 애니메이션 실행
-        observer.disconnect(); // 한 번만 실행되도록 감시 중단
-    }
-});
-
-// distanceResultButton의 속성 변화를 감지
-observer.observe(distanceResultButton, { attributes: true, attributeFilter: ['style'] });
-
-// ✅ 문의하기 버튼 상태 변화 감지 → 활성화 시 애니메이션 적용
-const contactButtonObserver = new MutationObserver(() => {
-    if (!contactButton.disabled && window.getComputedStyle(distanceResultButton).display !== 'none') {
-        showFinalMessage(); // 문의하기 버튼이 활성화될 때도 애니메이션 적용
-    } else {
-        finalMessage.style.display = "none"; // 비활성화 시 숨김
-        finalMessage.classList.remove("show"); // 상태 초기화
-    }
-});
-
-// 문의하기 버튼의 속성 변화를 감지
-contactButtonObserver.observe(contactButton, { attributes: true, attributeFilter: ['disabled'] });
-
-const webhookURL = "https://discord.com/api/webhooks/1347457847579119667/ZhMnuB_GQtH_1duycdaUixTLfrJDVpAMxqBTzjsQn1i7iK6P3UWdXWjrj2nXaW02uOKV";
-
-// "상담신청" 버튼 가져오기
-const consultationButton = document.getElementById("modal-submit-button");
-
-
-if (consultationButton) {
-    consultationButton.addEventListener("click", function() {
-        // 사용자가 입력한 정보 가져오기
-        const name = document.getElementById("modal-name").value;
-        const position = document.getElementById("modal-position").value;
-        const phone = document.getElementById("modal-phone").value;
-        const email = document.getElementById("modal-email").value;
-        const notes = document.getElementById("modal-notes").value.trim(); // 추가된 부분
-
-        if (!name || !position || !phone || !email) {
-            alert("⚠️ 정보를 모두 입력해주세요.");
-            return;
-        }
-
-        // 사용자가 선택한 견적 정보 가져오기
-        const selectedOptions = [];
-        document.querySelectorAll("#receipt-modal-items .receipt-item").forEach(item => {
-            const category = item.querySelector(".item-category").innerText;
-            const detail = item.querySelector(".item-detail").innerText;
-            const price = item.querySelector(".item-price").innerText;
-            selectedOptions.push(`${category}: ${detail} (${price})`);
-        });
-
-        const totalPrice = document.getElementById("receipt-modal-total-price").innerText;
-
-        // 디스코드로 보낼 데이터 준비
-        const payload = {
-            content: "**📢 새로운 상담 신청이 접수되었습니다!**",
-            embeds: [{
-                title: "📄 상담 신청 정보",
-                color: 3447003,
-                fields: [
-                    { name: "👤 이름", value: name, inline: true },
-                    { name: "🏢 직책", value: position, inline: true },
-                    { name: "📞 연락처", value: phone, inline: true },
-                    { name: "✉️ 이메일", value: email, inline: true },
-                    { name: "💰 총 견적", value: totalPrice, inline: true },
-                    { name: "📌 선택한 옵션", value: selectedOptions.join("\n"), inline: false }
-                ],
-                footer: {
-                    text: "문의 시간: " + new Date().toLocaleString()
-                }
-            }]
-        };
-
-        // 사용자가 추가 내용을 입력했을 경우에만 웹훅 메시지에 포함
-        if (notes !== "") {
-            payload.embeds[0].fields.push({
-                name: "📝 추가 전달내용 및 특이사항",
-                value: notes,
-                inline: false
-            });
-        }
-
-        // fetch API를 이용하여 디스코드로 전송
-        fetch(webhookURL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        }).then(response => {
-            if (response.ok) {
-                alert("✅ 상담 신청이 완료되었습니다! 담당자가 확인 후 연락드리겠습니다.");
-            } else {
-                alert("⚠️ 상담 신청 전송에 실패했습니다. 다시 시도해주세요.");
-            }
-        }).catch(error => {
-            console.error("Error sending webhook:", error);
-            alert("❌ 상담 신청 중 오류가 발생했습니다.");
-        });
-    });
-    
-    // ✅ 터치 시 즉시 실행되도록 `touchstart` 이벤트 추가 (기존 기능 유지)
-    consultationButton.addEventListener("touchstart", (event) => {
-        event.preventDefault(); // 자동으로 발생하는 click 이벤트 방지
-        consultationButton.click(); // 클릭 이벤트 강제 실행
-    }, { passive: false });
-    
-    // ✅ 마우스 버튼을 누르는 순간 즉시 실행되도록 `mousedown` 이벤트 추가
-    consultationButton.addEventListener("mousedown", (event) => {
-        event.preventDefault(); // 자동으로 발생하는 click 이벤트 방지
-        consultationButton.click(); // 클릭 이벤트 강제 실행
-    });
-
-} else {
-    console.error("❌ '상담신청' 버튼을 찾을 수 없습니다! ID를 확인해주세요.");
+#distance-question #distance-button:active {
+    background-color: #004080 !important; /* 더 진한 파란색 */
+    color: white;
 }
+
+/* 새 버튼 스타일 (running-time-button 스타일과 동일하게) */
+#distance-result-button {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 700;
+    padding: 0.625rem 1.875rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 1.5625rem;
+    background-color: #006cff;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 0;
+    margin-right: 0.9375rem;
+    margin-bottom: 1.4rem; /* 필요에 따라 조절 */
+    margin-top: -2rem; /* 필요에 따라 조절 */
+    display: none; /* 초기에는 숨김 */
+}
+
+/* (선택사항) 새 버튼 hover 효과 */
+#distance-result-button:hover {
+    background-color: #0056b3; /* 더 어두운 파란색 */
+    transform: translateY(-2px);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+}
+
+/* price-circle 스타일은 이미 존재하므로 추가할 필요 없음 */
+
+/* (선택사항) distance-result-text 스타일 */
+#distance-result-text {
+    margin-right: 1rem; /* 텍스트와 주황색 원 사이 간격. 필요에 따라 조절 */
+}
+
+/* distance-button 페이드인 효과 */
+#distance-button {
+    opacity: 0; /* 초기에는 투명하게 */
+    pointer-events: none; /* 초기에는 클릭 이벤트 무시 */
+    animation: fadeIn 1.25s forwards ease-in-out; /* 1초 동안 페이드인 애니메이션 */
+    animation-delay: 0.75s; /* 0.5초 지연 */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        pointer-events: none; /* 애니메이션 시작 시에도 클릭 무시 */
+    }
+    to {
+        opacity: 1;
+        pointer-events: auto; /* 애니메이션 끝날 때 클릭 허용 */
+    }
+}
+
+/* ---------------------------------------------------- distance ---------------------------------------------------- */
+
+/* ---------------------------------------------------- text-next-button ---------------------------------------------------- */
+/* #text-effect-next-button 스타일 (수정) */
+#text-effect-next-button {
+    font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+    font-weight: 700;
+    margin-top: 0.2rem !important;
+    padding: 0.65rem 1.4rem 0.5rem 1.45rem !important;
+    font-size: 0.85rem !important;
+    border: none;
+    border-radius: 1.5625rem;
+    background-color: #e9ecef !important; /* 이 부분을 추가 */
+    color: #495057; /* 텍스트 색상을 #495057 (회색)으로 변경 */
+    cursor: pointer;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    opacity: 1;
+    display: block; /* 초기에는 숨김 */
+    position: relative; /* 또는 position: fixed; */
+    z-index: 9999; /* 가장 높은 z-index 값 */
+}
+
+#text-effect-next-button.selected {
+	background-color: #e9ecef ; /* 이 부분을 추가 */
+    color: #495057 !important; /* 텍스트 색상을 #495057 (회색)으로 변경 */
+    position: relative ; /* 또는 position: fixed; */
+    z-index: 9999; /* 가장 높은 z-index 값 */
+}
+
+/* #text-effect-next-button hover, active 효과 (기존 코드 유지) */
+#text-effect-next-button:hover {
+    background-color: #ced4da!important;
+    transform: translateY(-2px);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+    position: relative; /* 또는 position: fixed; */
+    z-index: 9999; /* 가장 높은 z-index 값 */
+}
+
+#text-effect-next-button:active {
+    background-color: #e9ecef !important;
+    color: #495057;
+    position: relative; /* 또는 position: fixed; */
+    z-index: 9999; /* 가장 높은 z-index 값 */
+}
+
+/* #text-effect-next-button-container 스타일 (추가) */
+#text-effect-next-button-container {
+  height: 50px; /* 예시: 고정 높이 - space-next-button-container와 동일하게 */
+  overflow: hidden; /* 버튼이 숨겨질 때 내용이 넘치는 것을 방지 (선택 사항) */
+    position: relative; /* 또는 position: fixed; */
+    z-index: 9999; /* 가장 높은 z-index 값 */
+}
+
+#text-effect-next-button.hide { /* JavaScript에서 추가/제거할 클래스 */
+    visibility: hidden; /* 보이지 않게 하지만 공간은 유지 */
+    opacity: 0; /* 투명하게 */
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; /* opacity와 transform에 transition 적용 */
+    position: relative; /* 또는 position: fixed; */
+    z-index: 9999; /* 가장 높은 z-index 값 */
+}
+
+/* ---------------------------------------------------- text-next-button ---------------------------------------------------- */
+
+/* ---------------------------------------------------- price-bar ---------------------------------------------------- */
+/* width 값 수정 */
+#price-bar {
+  position: fixed;
+  bottom: 0;
+  opacity: 1;
+  transform: translateY(100%);
+  transition: opacity 0.001s ease-in-out, transform 0.001s ease-in-out, background-color 0.2s ease-in-out;
+  width: 30rem;
+  background-color: #ff9800;
+  color: white;
+  padding: 0.9375rem 1.25rem;
+  font-size: 1.125rem;
+  box-shadow: 0px -0.125rem 0.3125rem rgba(0, 0, 0, 0.2);
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  /* display: flex;  <-- 제거 */
+  /* align-items: flex-start;  <-- 제거 */
+  overflow: hidden;
+  height: 20px;
+  filter: blur(0.1rem) brightness(0.9) contrast(0.9) saturate(0.9);
+	z-index: 10001;
+}
+
+#price-bar.clickable {
+  filter: none; /* 블러 효과 제거 */
+  transition: filter 1s ease-in-out;
+}
+
+/* price-bar 호버 효과 */
+#price-bar:hover {
+  background-color: #F8880B; /* 살짝 어두운 주황색으로 변경 */
+  cursor: pointer; /* 마우스 커서를 포인터로 변경 */
+  transform: translateY(-2px);
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.3);
+  /* filter: brightness(0.95) contrast(1.3) saturate(0.75); /* 밝기를 80%로 줄이고, 대비를 120%로 늘림 */
+}
+
+#price-bar .price-text {
+	margin-top: 0rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+#price-bar span {
+  font-family: 'AppleSDGothicNeoM00', 'Nanum Gothic', 'Roboto', sans-serif;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------- price-bar ---------------------------------------------------- */
+
+/* ---------------------------------------------------- receipt ---------------------------------------------------- */
+/* 영수증 컨테이너 */
+#receipt-container {
+    position: absolute;
+    bottom: 100%; /* price-bar 위쪽으로 */
+	opacity: 1;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    overflow: visible; /* 내용이 넘칠 경우 숨김 */
+    height: 0; /* 초기 높이를 0으로 설정 (JS에서 제어)*/
+	align-items: center; /* 추가 */
+}
+
+/* 영수증 내용 */
+#receipt-content {
+    padding: 0.8rem 0.8rem 0rem ; /* 내용 여백 */
+    display: flex;        /* Flexbox 레이아웃 사용 */
+    flex-direction: column; /* 자식 요소들을 세로 방향으로 배치 */
+}
+
+/* 영수증 헤더 */
+#receipt-header {
+  display: flex;
+  padding: 0.5rem;
+  font-size: 1.125rem;
+  justify-content: space-between;
+  align-items: center; /* 세로 중앙 정렬 */
+  opacity: 0;
+}
+
+/* 점선 스타일 */
+#receipt-line {
+	border-bottom: 2px dashed #ffffff; /* 점선 스타일 */
+	width: 100%;
+	margin-top: 0.1rem !important;
+	margin-bottom: 0.4rem !important;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* 선택 항목 텍스트 스타일 (필요에 따라 추가/수정) */
+#receipt-items .receipt-item {
+	margin-bottom: 0; /* 제거: 위에서 row-gap으로 행 간격 제어 */
+	font-size: 1rem;
+	display: grid; /* 추가: 각 항목도 grid로 */
+	grid-template-columns: 1fr 2fr 1fr; /* 추가: 항목 내 3열 비율 */
+	align-items: center; /* 추가: 세로 중앙 정렬 */
+	grid-column-gap: 0.8rem; /* 필요에 따라 열 간격 조절 */
+}
+
+
+/* 스크롤 가능한 영역 */
+#receipt-items {
+	row-gap: 0.75rem; /* 행 간격 추가 */ /* 이 부분 추가 */
+	padding: 0.9375rem 1.25rem;
+	overflow-y: auto; /* 내용이 넘칠 경우 스크롤바 추가 */
+	max-height: 400px; /* 최대 높이 설정 (적절히 조절) */
+	flex-grow: 1;       /* 남은 공간을 모두 차지 */
+}
+
+/* 각 열 스타일 */
+.item-category {
+	margin-left: -0.75rem;
+	margin-bottom: 0.2rem;
+}
+
+.item-detail {
+  text-align: right; /* 2열 오른쪽 정렬 */
+}
+
+.item-price {
+  /* text-align: right;  <-- 제거 */
+  justify-self: end; /* 오른쪽 정렬 (grid) */
+  margin-right: -0.75rem;
+}
+
+/* ---------------------------------------------------- receipt ---------------------------------------------------- */
+
+#contact-button {
+    font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+    font-weight: 600;
+    width: 30%;
+    margin-top: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: -0.5rem;
+    padding: 0.7rem;
+	filter: brightness(0.9); /* 밝기를 80%로 줄이고, 대비를 120%로 늘림 */
+    background-color: #FFFFFF;
+    color: #0E0E0E;
+    border: none;
+    border-radius: 2rem;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: block;
+    transition: all 0.3s ease-in-out;
+	box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.3);
+}
+ 
+#contact-button:hover {
+	transform: translateY(-0.1rem)scale(110%);
+	box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.3);
+	filter: none; /* 밝기를 80%로 줄이고, 대비를 120%로 늘림 */
+}
+
+/* ... (기존 스타일) ... */
+#contact-button.disabled-button {
+    font-size: 1rem;
+    width: 50%;
+    background-color: #EDEDED;
+    color: #848484;
+    box-shadow: none;
+    pointer-events: auto; /* 클릭 이벤트 허용 */
+}
+
+#contact-button.disabled-button:hover {
+	transform: translateY(0rem)scale(100%);
+	box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.2);
+	filter: brightness(0.9) contrast(0.8); /* 밝기를 80%로 줄이고, 대비를 120%로 늘림 */
+}
+
+/* 영수증 항목 스타일 */
+.receipt-item {
+    display: grid; /* grid 레이아웃 사용 */
+    grid-template-columns: 1fr 2fr 1fr; /* 3열 레이아웃 (비율 조절 가능) */
+    align-items: center; /* 세로 가운데 정렬 */
+}
+
+.receipt-item > span:nth-child(2n) { /* 짝수 번째 span (세부 항목) */
+    text-align: right;
+}
+
+.receipt-item > span:nth-child(3n) { /* 홀수 번째 span (가격) */
+    text-align: right;
+    justify-self: end; /* 오른쪽 정렬 */
+}
+
+/* 숨겨진 텍스트 스타일 (투명 처리) */
+.hidden-text {
+    opacity: 0; /* 투명하게 처리 */
+    transition: opacity 0.3s ease; /* transition 추가 */
+}
+
+body {
+  /* ... 기존 스타일 ... */
+  transition: padding-bottom 0.6s cubic-bezier(0.85,0,0.15,1); /* padding-bottom 변화에 transition 적용 */
+}
+
+/* 오버레이 스타일 */
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); /* 반투명 검정 배경 */
+  z-index: 10009; /* 다른 요소들보다 위에 오도록 */
+  backdrop-filter: blur(0.5rem); /* 블러 효과 (5px) */
+  transition: opacity 1s ease; /* 서서히 나타나는 효과 */
+  opacity: 0; /* 초기에는 투명 */
+  pointer-events: none; /* 초기에는 클릭 이벤트 무시 */
+}
+
+#overlay.active {
+    opacity: 1; /* 활성화 시 불투명 */
+    pointer-events: auto; /* 클릭 이벤트 받음 */
+}
+
+
+/* 모달 스타일 */
+#receipt-modal {
+    position: fixed; /* 중요 */
+    /* bottom: 0;  <- 제거 */
+    /* transform: translateX(-50%) translateY(100%);  <- 제거 */
+    width: 90%; /* 너비 조정 */
+    max-width: 400px; /* 최대 너비 */
+	background-color: #f8f9fa; /* 또는 #fafafa */
+	color: #343a40; /* 또는 #212529 */
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10010; /* 오버레이보다 위에 오도록 */
+    top: auto; /* 세로 중앙 */
+	right: auto;
+    left: auto; /* 가로 중앙 */
+	bottom: 15%;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 위로 올라오는 애니메이션 */
+    opacity: 0; /* 초기 투명도 */
+    overflow-y: scroll; /* 스크롤바는 항상 표시 (숨김 처리해도 스크롤 영역 확보) */
+    height: auto; /* 콘텐츠에 맞게 높이 자동 조절 */
+    min-height: 10%; /* 또는 min-height: fit-content; */
+    max-height: 60%; /* 최대 높이 설정 (뷰포트 높이 기준) */
+    -ms-overflow-style: none;  /* IE, Edge */
+    scrollbar-width: none;  /* Firefox */
+	will-change: scroll-position; /* 또는 will-change: transform; */
+}
+
+#receipt-modal::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* 모달 애니메이션 */
+#receipt-modal.active {
+  opacity: 1;
+}
+
+#receipt-modal .receipt-modal-content {
+    display: flex;
+    flex-direction: column; /* 세로로 아이템 배치 */
+    gap: 0.2rem;
+}
+
+#receipt-modal .receipt-modal-header {
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    margin-top: 0.3rem;
+}
+
+#receipt-modal-line {
+  border-bottom: 0.1rem dashed #222222;
+  margin: 0.1rem 0.1rem 0.5rem;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  margin-bottom: 0.5rem;
+  height: auto;
+}
+
+#receipt-modal-items {
+	font-size: 0.85rem;
+	display: grid; /* 추가 */
+}
+
+/* 각 열 스타일 */
+#receipt-modal-items .item-category {
+  padding-left: 1rem;
+}
+
+#receipt-modal-items .item-detail {
+  padding: 0rem;
+  margin: 0rem;
+}
+
+#receipt-modal-items .item-price {
+  padding-right: 1rem;
+}
+
+/* 모달 총 견적 */
+#receipt-modal .receipt-modal-total {
+    margin-top: -0.6rem;
+    margin-bottom: 1rem;
+    margin-left: 0.15rem;
+    text-align: center;
+    font-size: 1rem;
+    display: flex; /* Flexbox 사용 */
+    justify-content: space-between; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    /* gap: 15rem; /* "누적 견적:" 텍스트와 금액 사이 간격 */
+	padding: 0rem;
+}
+
+#receipt-modal-line2 {  /*  <-- 이 부분 추가 */
+  border-bottom: 0.1rem dashed #222222;
+  margin: 0.4rem 0.1rem 1.2rem;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  height: auto;
+}
+
+#receipt-modal-total-price {
+    font-weight: bold;
+    /* margin-left: 0.5rem; */
+    margin-right: 0.2rem;
+}
+
+/* 안내 문구 */
+#receipt-modal-warning {
+    font-size: 0.7rem;
+    color: #919191;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+	margin-left: 1.5rem;
+	margin-right: 1.5rem;
+    line-height: 1.5;
+    text-align: justify;
+}
+
+#receipt-modal-warning p {
+    margin: 0;
+	margin-bottom: 1rem;
+}
+
+#modal-name,
+#modal-position,
+#modal-phone,
+#modal-email {
+    height: 2.5rem;
+    margin-bottom: -0.1rem;
+    border-radius: 0.5rem !important;
+}
+
+#modal-notes {
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 500;
+    padding-left: 0.8rem !important;
+    color: #FFFFFF !important;
+    width: 100%;
+    min-height: 5rem;
+    height: auto;
+    margin-top: 0.1rem !important;
+    border-radius: 0.5rem;
+    border: 1px solid #4d4d4d;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    box-sizing: content-box;
+    background-color: #4d4d4d;
+    resize: none;  /* 사용자가 크기 조절 못 하게 고정 */
+}
+
+#modal-notes::placeholder {  /* #modal-notes 전용 placeholder 스타일 */
+  color: #B9B9B9 !important;
+}
+
+#modal-notes, #receipt-modal-info, #receipt-modal {
+    overflow: auto; /* 또는 overflow-y: auto; */
+}
+
+/* 입력 필드 컨테이너 */
+#receipt-modal-info {
+	/* display: grid;  <-- 이 부분 삭제 */
+    height: auto;
+	gap: 0.4rem;
+	padding-left: 1.5rem;
+	padding-right: 1.5rem;
+	margin-bottom: 1rem;
+	display: flex; /* 가로 배치 */
+	flex-wrap: wrap; /* 넘치면 줄바꿈 */
+	justify-content: space-between; /* 양쪽 정렬 */
+}
+
+/* 입력 필드 스타일 */
+#receipt-modal-info input[type="text"] {
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 500;
+    width: calc(50% - 0.2rem); /* 2열로 배치, 간격 고려 */
+    padding: 0.8rem;
+    border: 1px solid #4d4d4d;
+    border-radius: 0.4rem;
+    background-color: #4d4d4d;
+    color: white;
+    font-size: 0.95rem;
+    box-sizing: border-box; /* 추가: padding, border가 width에 포함되도록 */
+}
+
+#receipt-modal-info input[type="tel"],
+#receipt-modal-info input[type="email"] {
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 500;
+    /* width: 94.2%; */ /* 이 부분은 삭제하거나 주석처리 */
+    width: 100%; /* 수정: 컨테이너에 꽉 차도록 */
+    padding: 0.8rem;
+    border: 1px solid #4d4d4d;
+    border-radius: 0.4rem;
+    background-color: #4d4d4d;
+    color: white;
+    font-size: 0.95rem;
+    box-sizing: border-box; /* 추가: padding, border가 width에 포함되도록 */
+}
+
+/* placeholder 스타일 */
+#receipt-modal-info input::placeholder {
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 500;
+    color: #DDDDDD !important;
+    font-size: 0.9rem;
+}
+
+/* 상담신청 버튼 */
+#modal-submit-button {
+	font-family: 'AppleSDGothicNeoM00','Nanum Gothic','Roboto',sans-serif;
+	font-weight: 700;
+	width: 30%;
+	padding: 0.5rem;
+	padding-top: 0.7rem;
+	padding-bottom: 0.65rem;
+	background-color: #ff9800;
+	color: white;
+	border: none;
+	border-radius: 10rem;
+	font-size: 1.2rem;
+	cursor: pointer;
+	transition: all 0.3s ease-in-out;
+	margin-top: 0.5rem;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 1rem;
+}
+
+/* 버튼 hover 효과 */
+#modal-submit-button:hover {
+    background-color: #e68a00; /* 더 어두운 주황색 */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+.button-wrapper {
+    position: relative;
+	margin-top: 7.35rem;
+    z-index: 1; /* 다른 요소보다 위에 배치 */
+}
+
+.button-gif {
+    /* position, left, transform, bottom 관련 속성은 유지 */
+    display: block;
+	position: absolute;
+	left: 48.5%;
+	transform: translateX(-50%);
+	bottom: 103%;
+	width: auto; /* 또는 */
+	height: 88%; /* button-wrapper 기준, 필요에 따라 조절, */
+	border-radius: 0.75rem !important; /* 원하는 둥글기 적용 */
+	/* object-fit: contain;  contain,cover,fill,none 속성 사용가능*/
+    pointer-events: auto !important; /* 클릭 가능하도록 설정 */
+    cursor: pointer; /* 마우스를 올리면 클릭 가능한 커서로 변경 */
+    z-index: 10000; /* 다른 요소보다 위에 배치 */
+	transition: 0.5s ease-in-out !important; 
+}
+
+.button-gif:hover {
+	scale: 110% ;
+    box-shadow: 0.5rem 0.3rem 0.5rem rgba(0, 0, 0, 0.3);
+}
+
+.zoomed {
+	scale: none !important;
+	box-shadow: none !important;
+	pointer-events: none !important;
+}
+
+.zoomed:hover {
+	scale: none !important;
+    box-shadow: none !important;
+	pointer-events: none !important;
+}
+
+.gif-container {
+    display: flex; /* Flexbox 사용 */
+    align-items: stretch; /* 자식 요소들의 높이를 동일하게 */
+    gap: 0.5rem; /* 필요한 경우 버튼 그룹 간 간격 추가 */
+    height: 15.2rem; /* 원하는 높이로 지정 (예: 200px, 10vh, auto 등) */
+	margin-bottom: -3.7rem;
+}
+
+#video-format-question {
+	/* position:relative;  */ /* 이부분은 필요하면 주석 해제*/
+}
+#video-format-question label {
+    margin-bottom: 0;
+    position: relative; /* 상대 위치 지정 */
+    z-index: 3;       /* 다른 요소들보다 위로 */
+	/* position:relative;
+	z-index:3; */ /* 이부분은 필요하면 주석 해제*/
+}
+
+/* -------------------------------------- 촬영 공간 질문 GIF -------------------------------------- */
+#shooting-space-question .button-gif {
+	bottom: 103%; /* 버튼 상단에 위치 */
+	left: 48.3%;
+	transform: translateX(-50%);
+	border-radius: 0.5rem;
+}
+
+#shooting-space-question .button-wrapper:nth-child(1) .button-gif { /* 실내 */
+	height: 63%;
+	width: auto;
+}
+
+#shooting-space-question .button-wrapper:nth-child(2) .button-gif { /* 실외 */
+	height: 63%;
+	width: auto;
+}
+
+#shooting-space-question .button-wrapper:nth-child(3) .button-gif { /* 항공(드론) */
+	height: 63%;
+	width: auto;
+}
+
+#shooting-space-question .gif-container {
+    display: flex;
+	margin-top: -1.8rem;
+	margin-bottom: -4.2rem;
+	gap: 1rem;
+    position: relative;
+}
+
+.space-button-wrapper {    /* 촬영 공간 질문에 대한 .button-wrapper 스타일 */
+    position: relative;
+	margin-top: 7.35rem;
+}
+/* ---------------------------------------------------------------------------------------------- */
+
+/* ------------------------------------- 무빙 퀄리티 질문 GIF ------------------------------------- */
+#equipment-question .button-gif {
+	bottom: 103%; /* 버튼 상단에 위치 */
+	left: 48.3%;
+	transform: translateX(-50%);
+	border-radius: 0.5rem;
+}
+
+/* 각 버튼별 GIF 크기 조절 */
+#equipment-question .button-wrapper:nth-child(1) .button-gif { /* 스탠다드 */
+    height: 63%;
+    width: auto;
+}
+
+#equipment-question .button-wrapper:nth-child(2) .button-gif { /* 디럭스 */
+    height: 63%;
+    width: auto;
+}
+
+#equipment-question .button-wrapper:nth-child(3) .button-gif { /* 프라임 */
+    height: 63%;
+    width: auto;
+}
+
+#equipment-question .gif-container {
+    display: flex;
+	margin-top: -1.8rem;
+	margin-bottom: -4.2rem;
+	gap: 1rem;
+    position: relative;
+}
+
+.equipment-button-wrapper {
+    position: relative;
+	margin-top: 7.35rem;
+}
+/* ---------------------------------------------------------------------------------------------- */
+
+/* ------------------------------------- 텍스트 효과 질문 GIF ------------------------------------- */
+#text-effect-question .button-gif {
+	bottom: 103%; /* 버튼 상단에 위치 */
+	left: 48.3%;
+	transform: translateX(-50%);
+	border-radius: 0.5rem;
+}
+
+/* 각 버튼별 GIF 크기 조절 */
+#text-effect-question .button-wrapper:nth-child(1) .button-gif { /* 필요없음 */
+  height: 63%;
+  width: auto;
+}
+
+#text-effect-question .button-wrapper:nth-child(2) .button-gif { /* 일반자막 */
+ height: 63%;
+  width: auto;
+}
+
+#text-effect-question .button-wrapper:nth-child(3) .button-gif { /* 공간효과 */
+  height: 63%;
+  width: auto;
+}
+
+#text-effect-question .gif-container {
+    display: flex;
+	margin-top: -1.8rem;
+	margin-bottom: -4.2rem;
+	gap: 1rem;
+    position: relative;
+}
+
+.text-effect-button-wrapper {
+    position: relative;
+	margin-top: 7.35rem;
+}
+/* ---------------------------------------------------------------------------------------------- */
+#image-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.expanded-gif {
+    position: absolute;
+    transform: translate(-50%, -50%) scale(0);
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease-in-out;
+}
+
+body.overlay-active {
+    overflow: hidden;
+}
+
+#final-message {
+    font-size: 1.2rem;
+    text-align: center;
+    color: #343a40;
+    margin-top: 6rem;
+	margin-bottom: 4rem;
+    opacity: 0;
+    transition: opacity 3s ease-in-out, transform 3s ease-in-out;
+}
+
+#final-message.show {
+    opacity: 0.85;
+    transform: translateY(0);
+    display: block;
+}
+
+/* ----------------------------------------- Loading Overlay ----------------------------------------- */
+/* 로딩 오버레이 스타일 */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9); /* 반투명 흰색 배경 */
+    display: flex;
+    flex-direction: column; /* 세로 중앙 정렬을 위해 */
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* 다른 모든 요소 위에 오도록 */
+}
+
+#loading-progress-bar-container {
+    width: 80%; /* 진행바 컨테이너 너비 */
+    max-width: 20rem; /* 최대 너비 제한 */
+    height: 1rem;
+    background-color: #ddd; /* 진행바 배경색 */
+    border-radius: 1rem; /* 둥근 모서리 */
+    overflow: hidden; /* 내부 진행바가 밖으로 나가지 않도록 */
+}
+
+#loading-progress-bar {
+    height: 100%;
+    width: 0; /* 초기 너비는 0 */
+    background-color: #1A74FF; /* 진행바 색상 */
+    border-radius: 10rem;
+    transition: width 1s ease-in-out; /* 부드러운 너비 변화 */
+}
+
+#loading-message {
+    opacity: 0.8;
+    margin-top: 0.75rem;
+    margin-left: 2rem;
+    font-size: 1.2rem;
+    color: #333;
+    display: flex; /* Flex 컨테이너로 설정 */
+    justify-content: space-between; /* 텍스트는 왼쪽, 스피너는 오른쪽에 배치 */
+    align-items: center; /* 세로 중앙 정렬 */
+    width: 80%;       /* 너비 설정 (필요에 따라 조정) */
+    max-width: 20rem;  /* 최대 너비 (필요에 따라 조정) */
+}
+
+/* 스피너 컨테이너.  #loading-message 바로 아래에 추가. */
+.spinner-container {
+    margin-right: 2rem;
+    display: inline-block; /* 인라인 블록으로 배치 */
+    vertical-align: middle; /* 텍스트와 세로 중앙 정렬 */
+}
+
+/* 스피너 스타일 (이전과 동일) */
+.spinner {
+    width: 2rem;
+    height: 2rem;
+    animation: rotate 2s linear infinite;
+}
+
+.spinner .path {
+    stroke: #FFBE00;
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 200;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 89, 200;
+        stroke-dashoffset: -35px;
+    }
+    100% {
+        stroke-dasharray: 89, 200;
+        stroke-dashoffset: -124px;
+    }
+}
+
+/* ----------------------------------------- Loading Overlay ----------------------------------------- */
+
+/* ----------------------------------------- 반응형: 화면 너비가 좁아질 때 ----------------------------------------- */
+@media (max-width: 768px) {
+	html {
+		font-size: 2.8vw; /* 화면 너비가 768px 이하일 때 폰트 크기 조절 */
+	}
+	#quote-form {
+		width: 115%;
+	}
+	#price-bar, #receipt-header {
+		width: 80%;
+	}
+	#price-bar .price-text {
+		font-size: 1.25rem;
+		margin-top: 0.1rem;
+		margin-bottom: 1rem;
+	}
+	#receipt-line {
+		margin-top: 0.4rem !important;
+		margin-bottom: 0.3rem !important;
+	}
+	#receipt-container {
+		width: 100%;
+	}
+	#shooting-space-question button {
+		padding-left: 1.7rem;
+		padding-right: 1.4rem;
+		margin-left: 0.1rem;
+		margin-right: 0.5rem;
+	}
+	#shooting-space-question button.exterior {
+		margin-left: 0rem;
+		margin-right: 0.5rem;
+	}
+	#shooting-space-question button.drone {
+		margin-left: -0rem;
+		margin-right: -0rem;
+		padding-left: 0.7rem;
+		padding-right: 0.7rem;
+	}
+	#equipment-question button {
+		padding-left: 1.2rem;
+		padding-right: 1.1rem;
+		margin-left: 0;
+		margin-right: 0.4rem;
+	}
+	#text-effect-question button[data-effect] {
+		padding-left: 0.7rem;
+		padding-right: 0.6rem;
+		margin-left: 0.1rem;
+		margin-right: 0.5rem;
+	}
+	#distance-result-button {
+		margin-top: 1rem;
+	}
+	#receipt-items {
+		grid-template-columns: 1fr 2fr 1fr; /* 1:1 비율로 변경 */
+	}
+	#receipt-items .receipt-item {
+		grid-template-columns: 1fr 2fr 1fr;
+	}
+	.item-category {
+		margin-left: -0.8rem;
+	}
+	.item-detail {
+		text-align: right;
+	}
+	.item-price {
+		text-align: right;
+		margin-right: -0.8rem;
+	}
+	#receipt-modal {
+		width: 70% !important;
+	}
+	#receipt-modal-items .item-category {
+	}
+	#receipt-modal-items {
+	}
+	#receipt-modal-items .receipt-item {
+		grid-template-columns: 1fr 2fr 1fr;
+	}
+	#receipt-modal-items .item-detail {
+		text-align: right;
+	}
+	#receipt-modal-items .item-category {
+		font-size: 0.9rem;
+		margin-left: -1.1rem;
+	}
+	#receipt-modal-items .item-price {
+		text-align: right;
+		margin-right: -1rem;
+	}
+	#receipt-modal .receipt-modal-total {
+		margin-right: -0.25rem;
+        margin-left: -0.1rem;
+	}
+	#receipt-modal-warning p {
+		font-size: 0.9rem;
+	}
+	.zoomed {
+		top: 45% !important;
+	}
+}
+/* ----------------------------------------- 반응형: 화면 너비가 좁아질 때 ----------------------------------------- */
