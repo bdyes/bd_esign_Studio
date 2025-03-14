@@ -400,8 +400,8 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
 	const observer = new IntersectionObserver((entries) => {
 		entries.forEach(entry => {
 			if (!entry.isIntersecting) {
-				entry.target.style.transform = "translateY(0.0001px)"; // 미세한 이동으로 강제 렌더링
-				entry.target.style.willChange = "transform"; // 최적화 방지
+				entry.target.style.opacity = "0.99999"; // 미세한 이동으로 강제 렌더링
+				entry.target.style.willChange = "opacity"; // 최적화 방지
 			}
 		});
 	}, { root: null, threshold: 0 });
