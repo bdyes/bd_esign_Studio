@@ -211,6 +211,7 @@ function updateContactButtonState() {
 
 
 
+
     // 클릭 이벤트 제거 (비활성화 상태)
     contactButton.onclick = null;
   }
@@ -571,6 +572,7 @@ function resetToStartScreen() {
   // 4️⃣ 누적 견적 바 다시 흐리게 만들고 비활성화
   priceBar.style.pointerEvents = 'none';
   priceBar.classList.remove('clickable');
+
   document.getElementById('total-price').textContent = '0원';
   document.getElementById('receipt-total-price').textContent = '0원';
 
@@ -944,6 +946,7 @@ distanceButton.addEventListener('click', () => {
         extraCostInTenThousands = extraCostInTenThousands.slice(0, -1);  // 마지막 0 제거
       }
     }
+
   }
 
 
