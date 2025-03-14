@@ -419,8 +419,53 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
 	}
 	
 	window.addEventListener('load', keepRendering);
+
+	function checkGifVisibility() {
+		gifs.forEach(gif => {
+			const rect = gif.getBoundingClientRect();
+			const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+			const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+
+			// 이미지가 화면 안에 있는지 확인
+			const isVisible = (
+				rect.top >= 0 &&
+				rect.left >= 0 &&
+				rect.bottom <= windowHeight &&
+				rect.right <= windowWidth
+			);
+
+			if (!isVisible) {
+				// 화면 밖으로 나간 경우, 렌더링 유지 및 적절한 위치로 이동
+				gif.style.visibility = 'visible';
+				// 예시: 화면 오른쪽으로 2000px 이동
+				gif.style.opacity = '0.99999';
+			} else {
+				// 화면 안에 있는경우 원래대로 돌려놓음.
+				gif.style.opacity = '0.99999';
+			}
+		});
+	}
+
+	// 스크롤 이벤트에 함수 연결
+	window.addEventListener('scroll', checkGifVisibility);
 	
-    updateContactButtonState();
+    const gpuCanvas = document.createElement('canvas'); // 캔버스 생성
+    gpuCanvas.id = 'gpuCanvas';
+    gpuCanvas.style.display = 'none'; // 캔버스 숨김
+    document.body.appendChild(gpuCanvas); // body에 추가
+
+    const canvas = document.getElementById('gpuCanvas');
+    const ctx = canvas.getContext('webgl');
+    if (ctx) {
+        // WebGL 렌더링 코드 작성 (GPU 사용 유도)
+        ctx.clearColor(0.0, 0.0, 0.0, 1.0);
+        ctx.clear(ctx.COLOR_BUFFER_BIT);
+        // 간단한 렌더링 또는 텍스처 로딩 등을 수행하여 GPU 사용 유도
+    } else {
+        console.error("WebGL 컨텍스트를 얻을 수 없습니다. WebGL을 지원하지 않는 환경이거나 WebGL이 비활성화되었을 수 있습니다.");
+    }
+
+	updateContactButtonState();
 });
 
 // #price-bar 클릭 이벤트 리스너
