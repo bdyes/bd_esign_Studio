@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
 	// 📌 `requestAnimationFrame`을 사용해 강제로 렌더링 유지
 	function keepRendering() {
 		gifs.forEach(gif => {
-			gif.style.transform = "translateY(0.0001px)"; // GPU 가속을 유도하여 최적화 방지
+			gif.style.opacity = "0.99999"; // GPU 가속을 유도하여 최적화 방지
 		});
 		requestAnimationFrame(keepRendering);
 	}
