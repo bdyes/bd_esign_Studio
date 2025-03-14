@@ -1247,7 +1247,7 @@ body {
 
 .button-gif {
 	will-change: transform !important; /* 브라우저 최적화 방지 */
-	transform: translateZ(0) !important; /* GPU 가속 */
+	transform: translateZ(1) !important; /* GPU 가속 */
 	/* position, left, transform, bottom 관련 속성은 유지 */
 	display: block;
 	position: absolute;
