@@ -1246,8 +1246,10 @@ body {
 }
 
 .button-gif {
-    /* position, left, transform, bottom 관련 속성은 유지 */
-    display: block;
+	will-change: transform; /* 브라우저 최적화 방지 */
+	transform: translateZ(0); /* GPU 가속 */
+	/* position, left, transform, bottom 관련 속성은 유지 */
+	display: block;
 	position: absolute;
 	left: 48.5%;
 	transform: translateX(-50%);
@@ -1256,9 +1258,9 @@ body {
 	height: 88%; /* button-wrapper 기준, 필요에 따라 조절, */
 	border-radius: 0.75rem !important; /* 원하는 둥글기 적용 */
 	/* object-fit: contain;  contain,cover,fill,none 속성 사용가능*/
-    pointer-events: auto !important; /* 클릭 가능하도록 설정 */
-    cursor: pointer; /* 마우스를 올리면 클릭 가능한 커서로 변경 */
-    z-index: 10000; /* 다른 요소보다 위에 배치 */
+	pointer-events: auto !important; /* 클릭 가능하도록 설정 */
+	cursor: pointer; /* 마우스를 올리면 클릭 가능한 커서로 변경 */
+	z-index: 10000; /* 다른 요소보다 위에 배치 */
 	transition: 0.5s ease-in-out !important; 
 }
 
