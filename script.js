@@ -280,6 +280,13 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
         spatial: isMobile ? "https://i.imgur.com/odkIvjK.gif" : "https://i.imgur.com/I7Myh0x.gif"
     };
 
+    // 📌 GIF 프리로드 최적화 (PC vs 모바일 구분)
+    const gifUrls = Object.values(gifMapping);
+    let loadedImages = 0;
+    let fakeProgress = 0;
+    let fakeProgressInterval;
+    let dotsInterval;
+
     // 점 애니메이션 시작
     let dots = "";
     dotsInterval = setInterval(() => {
