@@ -23,6 +23,7 @@ const textEffectNextButton = document.getElementById('text-effect-next-button');
 const distanceResultButton = document.getElementById('distance-result-button'); // 새 버튼
 const distanceResultText = document.getElementById('distance-result-text'); // 새 버튼 안의 텍스트
 const finalMessage = document.getElementById('final-message');
+const gifs = document.querySelectorAll('.button-gif');
 
 let selectedEquipment = null;
 let selectedTextEffects = [];
@@ -30,6 +31,30 @@ let isContactButtonClicked = false; // 플래그 변수 추가
 let isModalOpen = false; // 모달 열림 상태 플래그
 let isDistanceEntered = false; // 이동거리 입력 여부를 저장하는 변수
 let nextQuestionShown = false;
+
+// 📌 화면에서 사라져도 계속 렌더링되도록 강제 유지
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (!entry.isIntersecting) {
+            entry.target.style.transform = "translateY(0.0001px)"; // 미세한 이동으로 강제 렌더링
+            entry.target.style.willChange = "transform"; // 최적화 방지
+        }
+    });
+}, { root: null, threshold: 0 });
+
+gifs.forEach(gif => {
+    observer.observe(gif);
+});
+
+// 📌 `requestAnimationFrame`을 사용해 강제로 렌더링 유지
+function keepRendering() {
+    gifs.forEach(gif => {
+        gif.style.transform = "translateY(0.0001px)"; // GPU 가속을 유도하여 최적화 방지
+    });
+    requestAnimationFrame(keepRendering);
+}
+
+window.addEventListener('load', keepRendering);
 
 // priceBar 관련 변수
 const priceBar = document.getElementById('price-bar');
