@@ -31,28 +31,60 @@ let isModalOpen = false; // 모달 열림 상태 플래그
 let isDistanceEntered = false; // 이동거리 입력 여부를 저장하는 변수
 let nextQuestionShown = false;
 
-// 다운로드 속도를 표시할 <span> 요소
-const downloadSpeedElement = document.getElementById('download-speed');
+document.addEventListener("DOMContentLoaded", function () {
+  let currentSpeed = 1; // 초기 속도를 1으로 설정
+  let updateInterval = 1; // 초기 업데이트 간격 (랜덤 값으로 갱신됨)
+  let isLoading = true;
 
-// 초기 속도 값
-let currentSpeed = 90; // 초기 속도를 0.5 Mbps로 설정
+  const downloadSpeedElement = document.querySelector("#download-speed");
+  const startButton = document.querySelector("#start-button");
 
-// setInterval 함수를 사용하여 주기적으로 속도 변경
-setInterval(() => {
-  // 랜덤한 속도 생성 (예: 1 ~ 5 Mbps 범위)
-  const randomSpeed = Math.random() * 400 + 100;
+  if (!downloadSpeedElement) {
+    console.error("❌ download-speed 요소를 찾을 수 없음! HTML에서 확인 필요");
+    return;
+  }
 
-  // 이전 속도를 기준으로 변화폭 제한 (예: ±0.5 Mbps)
-  const maxChange = 500;
-  const speedChange = Math.random() * maxChange * 2 - maxChange; // -0.5 ~ 0.5
+  if (!startButton) {
+    console.error("❌ start-button 요소를 찾을 수 없음! HTML에서 확인 필요");
+    return;
+  }
 
-  currentSpeed += speedChange;
+  function updateSpeed() {
+    console.log("🔄 속도 업데이트 실행"); 
+    if (!isLoading) return;
 
-  // 속도 범위 제한 (0 ~ 5 Mbps)
-  currentSpeed = Math.max(0, Math.min(4289.72, currentSpeed));
+    const maxChange = 500; // 변화량 범위 (예: -500 ~ +500)
+    const speedChange = Math.random() * maxChange * 2 - maxChange;
+    currentSpeed += speedChange;
+    currentSpeed = Math.max(0.00, Math.min(4289.72, currentSpeed));
 
-  downloadSpeedElement.textContent = currentSpeed.toFixed(2);
-}, 1);
+    console.log(`⚡ 현재 속도: ${currentSpeed.toFixed(2)}`); 
+    downloadSpeedElement.textContent = currentSpeed.toFixed(2);
+    setTimeout(updateSpeed, updateInterval);
+  }
+
+  function updateIntervalTime() {
+    if (!isLoading) return;
+
+    updateInterval = Math.floor(Math.random() * 199) + 1;
+    console.log(`⏱ 업데이트 주기 변경: ${updateInterval}ms`);
+    setTimeout(updateIntervalTime, 100);
+  }
+
+  function stopUpdates() {
+    isLoading = false;
+    console.log("🛑 로딩 종료 → 속도 업데이트 중지됨");
+  }
+
+  // ✅ 버튼 클릭 시 stopUpdates 실행되도록 이벤트 추가
+  startButton.addEventListener("click", function () {
+    console.log("✅ 시작 버튼 클릭됨! 함수 실행 중지");
+    stopUpdates();
+  });
+
+  updateSpeed();
+  updateIntervalTime(); // 주기 변경 함수 실행
+});
 
 // priceBar 관련 변수
 const priceBar = document.getElementById('price-bar');
