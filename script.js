@@ -1753,7 +1753,7 @@ const contactButtonObserver = new MutationObserver(() => {
 // 문의하기 버튼의 속성 변화를 감지
 contactButtonObserver.observe(contactButton, { attributes: true, attributeFilter: ['disabled'] });
 
-const webhookURL = "https://discord.com/api/webhooks/1347457847579119667/ZhMnuB_GQtH_1duycdaUixTLfrJDVpAMxqBTzjsQn1i7iK6P3UWdXWjrj2nXaW02uOKV";
+const webhookURL = "https://discord.com/api/webhooks/1350971156722880632/3TeV2zQFYTKOEvUb-R4JDtn2k4rFTTROB04QwGqy6U-1VCaRw7btHvVkU7WbvZnm190W";
 
 // "상담신청" 버튼 가져오기
 const consultationButton = document.getElementById("modal-submit-button");
