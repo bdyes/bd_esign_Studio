@@ -31,6 +31,29 @@ let isModalOpen = false; // 모달 열림 상태 플래그
 let isDistanceEntered = false; // 이동거리 입력 여부를 저장하는 변수
 let nextQuestionShown = false;
 
+// 다운로드 속도를 표시할 <span> 요소
+const downloadSpeedElement = document.getElementById('download-speed');
+
+// 초기 속도 값
+let currentSpeed = 90; // 초기 속도를 0.5 Mbps로 설정
+
+// setInterval 함수를 사용하여 주기적으로 속도 변경
+setInterval(() => {
+  // 랜덤한 속도 생성 (예: 1 ~ 5 Mbps 범위)
+  const randomSpeed = Math.random() * 400 + 100;
+
+  // 이전 속도를 기준으로 변화폭 제한 (예: ±0.5 Mbps)
+  const maxChange = 500;
+  const speedChange = Math.random() * maxChange * 2 - maxChange; // -0.5 ~ 0.5
+
+  currentSpeed += speedChange;
+
+  // 속도 범위 제한 (0 ~ 5 Mbps)
+  currentSpeed = Math.max(0, Math.min(4289.72, currentSpeed));
+
+  downloadSpeedElement.textContent = currentSpeed.toFixed(2);
+}, 1);
+
 // priceBar 관련 변수
 const priceBar = document.getElementById('price-bar');
 const receiptContainer = document.getElementById('receipt-container');
@@ -206,6 +229,8 @@ function updateContactButtonState() {
     contactButton.disabled = true; // 비활성화
     contactButton.classList.add('disabled-button');
     contactButton.textContent = "선택을 모두 완료해주세요"; // 텍스트 변경
+
+
 
 
 
@@ -576,6 +601,7 @@ function smoothScrollTo(targetPosition) {
 topButton.addEventListener('click', () => {
     smoothScrollTo(0); // 맨 위로 스크롤
 });
+
 
 bottomButton.addEventListener('click', () => {
     // 📌 최적의 최댓값 계산
