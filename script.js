@@ -453,56 +453,6 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
 
 	const gifs = document.querySelectorAll('.button-gif');
 
-	// 📌 화면에서 사라져도 계속 렌더링되도록 강제 유지
-	const observer = new IntersectionObserver((entries) => {
-		entries.forEach(entry => {
-			if (!entry.isIntersecting) {
-				entry.target.style.opacity = "0.99999"; // 미세한 이동으로 강제 렌더링
-				entry.target.style.willChange = "opacity"; // 최적화 방지
-			}
-		});
-	}, { root: null, threshold: 0 });
-	
-	gifs.forEach(gif => {
-		observer.observe(gif);
-	});
-	
-	// 📌 `requestAnimationFrame`을 사용해 강제로 렌더링 유지
-	function keepRendering() {
-		gifs.forEach(gif => {
-			gif.style.opacity = "0.99999"; // GPU 가속을 유도하여 최적화 방지
-		});
-		requestAnimationFrame(keepRendering);
-	}
-	
-	window.addEventListener('load', keepRendering);
-
-	function checkGifVisibility() {
-		gifs.forEach(gif => {
-			const rect = gif.getBoundingClientRect();
-			const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-			const windowWidth = window.innerWidth || document.documentElement.clientWidth;
-
-			// 이미지가 화면 안에 있는지 확인
-			const isVisible = (
-				rect.top >= 0 &&
-				rect.left >= 0 &&
-				rect.bottom <= windowHeight &&
-				rect.right <= windowWidth
-			);
-
-			if (!isVisible) {
-				// 화면 밖으로 나간 경우, 렌더링 유지 및 적절한 위치로 이동
-				gif.style.visibility = 'visible';
-				// 예시: 화면 오른쪽으로 2000px 이동
-				gif.style.opacity = '0.99999';
-			} else {
-				// 화면 안에 있는경우 원래대로 돌려놓음.
-				gif.style.opacity = '0.99999';
-			}
-		});
-	}
-
 	// 스크롤 이벤트에 함수 연결
 	window.addEventListener('scroll', checkGifVisibility);
 	
