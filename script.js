@@ -1787,65 +1787,90 @@ contactButtonObserver.observe(contactButton, { attributes: true, attributeFilter
 
 const webhookURL = "https://discord.com/api/webhooks/1350971156722880632/3TeV2zQFYTKOEvUb-R4JDtn2k4rFTTROB04QwGqy6U-1VCaRw7btHvVkU7WbvZnm190W";
 
-// "상담신청" 버튼 가져오기
 const consultationButton = document.getElementById("modal-submit-button");
 
-
 if (consultationButton) {
-    consultationButton.addEventListener("click", function() {
-        // 사용자가 입력한 정보 가져오기
-        const name = document.getElementById("modal-name").value;
-        const position = document.getElementById("modal-position").value;
-        const phone = document.getElementById("modal-phone").value;
-        const email = document.getElementById("modal-email").value;
-        const notes = document.getElementById("modal-notes").value.trim(); // 추가된 부분
+    consultationButton.addEventListener("click", function(event) {
+        event.preventDefault();
+
+        const name = document.getElementById("modal-name").value.trim();
+        const position = document.getElementById("modal-position").value.trim();
+        const phone = document.getElementById("modal-phone").value.trim();
+        const email = document.getElementById("modal-email").value.trim();
+        const notes = document.getElementById("modal-notes").value.trim();
 
         if (!name || !position || !phone || !email) {
             alert("⚠️ 정보를 모두 입력해주세요.");
             return;
         }
 
-        // 사용자가 선택한 견적 정보 가져오기
-        const selectedOptions = [];
-        document.querySelectorAll("#receipt-modal-items .receipt-item").forEach(item => {
-            const category = item.querySelector(".item-category").innerText;
-            const detail = item.querySelector(".item-detail").innerText;
-            const price = item.querySelector(".item-price").innerText;
-            selectedOptions.push(`${category}: ${detail} (${price})`);
-        });
-
-        const totalPrice = document.getElementById("receipt-modal-total-price").innerText;
-
-        // 디스코드로 보낼 데이터 준비
-        const payload = {
-            content: "**📢 새로운 상담 신청이 접수되었습니다!**",
-            embeds: [{
-                title: "📄 상담 신청 정보",
-                color: 3447003,
-                fields: [
-                    { name: "👤 이름", value: name, inline: true },
-                    { name: "🏢 직책", value: position, inline: true },
-                    { name: "📞 연락처", value: phone, inline: true },
-                    { name: "✉️ 이메일", value: email, inline: true },
-                    { name: "💰 총 견적", value: totalPrice, inline: true },
-                    { name: "📌 선택한 옵션", value: selectedOptions.join("\n"), inline: false }
-                ],
-                footer: {
-                    text: "문의 시간: " + new Date().toLocaleString()
-                }
-            }]
+        const extractPrice = (text) => {
+            const prices = {
+                "실내": 0,
+                "실외": 30000,
+                "항공(드론)": 50000,
+                "일반자막": 30000,
+                "공간효과": 100000
+            };
+            return prices[text] ? `${prices[text].toLocaleString()}원` : "0원";
         };
 
-        // 사용자가 추가 내용을 입력했을 경우에만 웹훅 메시지에 포함
+        const options = {
+            "영상 방향": new Set(),
+            "러닝 타임": new Set(),
+            "촬영 공간": new Set(),
+            "무빙 퀄리티": new Set(),
+            "텍스트 효과": new Set(),
+            "이동 거리": new Set()
+        };
+
+        document.querySelectorAll("#receipt-modal-items .receipt-item").forEach(item => {
+            const category = item.querySelector(".item-category").innerText.trim();
+            const detail = item.querySelector(".item-detail").innerText.trim();
+            const price = item.querySelector(".item-price").innerText.trim();
+            if (options[category]) {
+                options[category].add(`${category}: ${detail} [${price}]`);
+            }
+        });
+
+        document.querySelectorAll("#shooting-space-question button.selected").forEach(button => {
+            const spaceName = button.innerText.trim().replace(/\d+/g, '').trim();
+            const price = extractPrice(spaceName);
+            options["촬영 공간"].add(`촬영 공간: ${spaceName} [${price}]`);
+        });
+
+        document.querySelectorAll("#text-effect-question button.selected").forEach(button => {
+            const effectName = button.innerText.trim().replace(/\d+/g, '').trim();
+            const price = extractPrice(effectName);
+            options["텍스트 효과"].add(`텍스트 효과: ${effectName} [${price}]`);
+        });
+
+        const totalPrice = document.getElementById("receipt-modal-total-price").innerText.trim();
+
+        const orderedOptions = Object.keys(options)
+            .flatMap(key => [...options[key]]); // Set을 배열로 변환해서 출력
+
+        const payload = {
+            content: "📢 **새로운 상담 신청이 접수되었습니다!**\n\n" +
+                     "**📄 상담 신청 정보**\n" +
+                     `👤 이름: ${name}\n` +
+                     `🏢 직책: ${position}\n` +
+                     `📞 연락처: ${phone}\n` +
+                     `✉️ 이메일: ${email}\n` +
+                     `💰 총 견적: **${totalPrice}**\n\n` +
+                     "📌 **선택한 옵션**\n" +
+                     orderedOptions.join("\n") + "\n\n" +
+                     `⏰ 문의 시간: ${new Date().toLocaleString()}`,
+            embeds: []
+        };
+
         if (notes !== "") {
-            payload.embeds[0].fields.push({
-                name: "📝 추가 전달내용 및 특이사항",
-                value: notes,
-                inline: false
+            payload.embeds.push({
+                title: "📝 추가 전달내용 및 특이사항",
+                description: notes
             });
         }
 
-        // fetch API를 이용하여 디스코드로 전송
         fetch(webhookURL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1861,19 +1886,6 @@ if (consultationButton) {
             alert("❌ 상담 신청 중 오류가 발생했습니다.");
         });
     });
-    
-    // ✅ 터치 시 즉시 실행되도록 `touchstart` 이벤트 추가 (기존 기능 유지)
-    consultationButton.addEventListener("touchstart", (event) => {
-        event.preventDefault(); // 자동으로 발생하는 click 이벤트 방지
-        consultationButton.click(); // 클릭 이벤트 강제 실행
-    }, { passive: false });
-    
-    // ✅ 마우스 버튼을 누르는 순간 즉시 실행되도록 `mousedown` 이벤트 추가
-    consultationButton.addEventListener("mousedown", (event) => {
-        event.preventDefault(); // 자동으로 발생하는 click 이벤트 방지
-        consultationButton.click(); // 클릭 이벤트 강제 실행
-    });
-
 } else {
     console.error("❌ '상담신청' 버튼을 찾을 수 없습니다! ID를 확인해주세요.");
 }
