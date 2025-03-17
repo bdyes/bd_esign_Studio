@@ -1491,7 +1491,7 @@ body.overlay-active {
 
 #loading-message {
     opacity: 0.8;
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
     margin-left: 2rem;
     font-size: 1.2rem;
     color: #333;
@@ -1499,7 +1499,7 @@ body.overlay-active {
     justify-content: space-between; /* 텍스트는 왼쪽, 스피너는 오른쪽에 배치 */
     align-items: center; /* 세로 중앙 정렬 */
     width: 80%;       /* 너비 설정 (필요에 따라 조정) */
-    max-width: 20rem;  /* 최대 너비 (필요에 따라 조정) */
+    max-width: 21rem;  /* 최대 너비 (필요에 따라 조정) */
 }
 
 #download-speed-box {
@@ -1519,6 +1519,7 @@ body.overlay-active {
 
 /* 스피너 컨테이너.  #loading-message 바로 아래에 추가. */
 .spinner-container {
+    margin-top: 0.2rem;
     margin-right: 2rem;
     display: inline-block; /* 인라인 블록으로 배치 */
     vertical-align: middle; /* 텍스트와 세로 중앙 정렬 */
