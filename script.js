@@ -32,9 +32,10 @@ let isDistanceEntered = false; // 이동거리 입력 여부를 저장하는 변
 let nextQuestionShown = false;
 
 document.addEventListener("DOMContentLoaded", function () {
-  let currentSpeed = 1; // 초기 속도를 1으로 설정
-  let updateInterval = 1; // 초기 업데이트 간격 (랜덤 값으로 갱신됨)
+  let currentSpeed = 1;
+  let updateInterval = 1;
   let isLoading = true;
+  let maxChange = 100; // 초기 변화량 범위 설정
 
   const downloadSpeedElement = document.querySelector("#download-speed");
   const startButton = document.querySelector("#start-button");
@@ -50,15 +51,18 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function updateSpeed() {
-    console.log("🔄 속도 업데이트 실행"); 
+    console.log("🔄 속도 업데이트 실행");
     if (!isLoading) return;
 
-    const maxChange = 500; // 변화량 범위 (예: -500 ~ +500)
-    const speedChange = Math.random() * maxChange * 2 - maxChange;
+    // speedChange 계산 수정
+    const minChange = -1.1 * maxChange; // 최소 변화량 설정 (-150)
+    const maxPositiveChange = maxChange; // 최대 양수 변화량 설정 (+100)
+    const speedChange = Math.random() * (maxPositiveChange - minChange) + minChange;
+  
     currentSpeed += speedChange;
     currentSpeed = Math.max(0.00, Math.min(4289.72, currentSpeed));
 
-    console.log(`⚡ 현재 속도: ${currentSpeed.toFixed(2)}`); 
+    console.log(`⚡ 현재 속도: ${currentSpeed.toFixed(2)}`);
     downloadSpeedElement.textContent = currentSpeed.toFixed(2);
     setTimeout(updateSpeed, updateInterval);
   }
@@ -66,8 +70,13 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateIntervalTime() {
     if (!isLoading) return;
 
-    updateInterval = Math.floor(Math.random() * 199) + 1;
+    updateInterval = Math.floor(Math.random() * 99) + 1;
     console.log(`⏱ 업데이트 주기 변경: ${updateInterval}ms`);
+
+    // 변화량 범위 랜덤 변경
+    maxChange = Math.floor(Math.random() * 249) + 1;
+    console.log(`📈 변화량 범위 변경: ${maxChange}`);
+
     setTimeout(updateIntervalTime, 100);
   }
 
@@ -76,14 +85,13 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("🛑 로딩 종료 → 속도 업데이트 중지됨");
   }
 
-  // ✅ 버튼 클릭 시 stopUpdates 실행되도록 이벤트 추가
   startButton.addEventListener("click", function () {
     console.log("✅ 시작 버튼 클릭됨! 함수 실행 중지");
     stopUpdates();
   });
 
   updateSpeed();
-  updateIntervalTime(); // 주기 변경 함수 실행
+  updateIntervalTime();
 });
 
 // priceBar 관련 변수
@@ -394,16 +402,124 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
 
     Promise.all(gifUrls.map(url => loadImage(url)))
     .then(() => {
+        // setTimeout(() => {
+        //     loadingOverlay.style.display = 'none';
+        //     runIntroAnimation();
+        // }, 500);
+
+        // 로딩 완료 후 0.5초 대기 후 애니메이션 실행
         setTimeout(() => {
-            loadingOverlay.style.display = 'none';
-            runIntroAnimation();
-        }, 500);
+            anime({
+                targets: loadingOverlay,
+                opacity: 0,
+                duration: 500, // 애니메이션 지속 시간 (ms)
+                easing: 'easeOutQuad', // 애니메이션 효과
+                complete: function() {
+                    loadingOverlay.style.display = 'none'; // 애니메이션 후 숨김 처리
+                    runIntroAnimation();
+                }
+            });
+        }, 2000);
+
+        // ✅ 로딩 완료 시 다운로드 속도 숨기고 "Completed" 표시 (1.5초 후)
+        setTimeout(() => {
+            const downloadSpeedBox = document.getElementById('download-speed-box');
+            const loadingMessage = document.getElementById('loading-message');
+
+            // ✅ 기존 내용을 다 지우되, 스피너는 남겨두기
+            const spinner = document.querySelector('.spinner-container');
+            if (spinner) {
+                spinner.remove(); // 먼저 기존 위치에서 삭제 (나중에 다시 추가)
+            }
+
+            loadingMessage.innerHTML = ""; // 기존 메시지 삭제 (스피너도 날아가지만 다시 붙일 거임)
+
+            // ✅ "Completed" 텍스트 추가
+            const completedText = document.createElement('span');
+            completedText.textContent = "Completed";
+            completedText.style.fontSize = "1.2rem";
+            completedText.style.marginRight = "10px"; // 간격 추가
+
+            // ✅ 스피너 다시 추가 (유지)
+            if (spinner) {
+                loadingMessage.appendChild(completedText);
+                loadingMessage.appendChild(spinner); // 스피너 다시 추가 (유지됨)
+            }
+
+            // ✅ 속도 텍스트는 사라지도록 처리
+            downloadSpeedBox.style.display = 'none';
+        }, 1000);
+        setTimeout(() => {
+            const spinner = document.querySelector('.spinner-container');
+
+            if (spinner) {
+                // ✅ 0.4초 동안 페이드아웃 (투명화, 레이아웃 유지)
+                anime({
+                    targets: spinner,
+                    opacity: 0,
+                    duration: 250,
+                    easing: 'easeOutQuad',
+                    complete: () => {
+                        // ✅ 기존 스피너를 투명하게 만들지만, 자리 유지
+                        spinner.style.visibility = 'hidden';
+
+                        // ✅ 정확한 크기 & 정사각형으로 강제 조정
+                        const spinnerRect = spinner.getBoundingClientRect();
+                        const overlay = document.getElementById('loading-overlay');
+                        const overlayRect = overlay.getBoundingClientRect();
+
+                        const size = Math.max(spinnerRect.width, spinnerRect.height); // 가장 큰 값으로 정사각형 만들기
+
+                        // ✅ 로딩 오버레이 내부에 완벽한 원 생성
+                        const newCircle = document.createElement('div');
+                        newCircle.style.position = 'absolute';
+                        newCircle.style.width = `${size}px`;
+                        newCircle.style.height = `${size}px`;
+                        newCircle.style.borderRadius = '50%';
+                        newCircle.style.backgroundColor = getComputedStyle(spinner.querySelector('.path')).stroke;
+
+                        // ✅ 스피너와 동일한 위치 설정 (오버레이 내부 기준)
+                        newCircle.style.left = `${spinnerRect.left - overlayRect.left + (spinnerRect.width - size) / 2}px`;
+                        newCircle.style.top = `${spinnerRect.top - overlayRect.top + (spinnerRect.height - size) / 2 - 3}px`;
+
+                        newCircle.style.transform = 'scale(0)';
+                        newCircle.style.zIndex = spinner.style.zIndex;
+
+                        // ✅ 로딩 오버레이 안에 추가
+                        overlay.appendChild(newCircle);
+
+                        // ✅ EaseInOutElastic 애니메이션 적용 (짠! 하고 등장)
+                        anime({
+                            targets: newCircle,
+                            scale: [0, 0.7],
+                            duration: 800,
+                            easing: 'easeInOutElastic'
+                        });
+                    }
+                });
+            }
+        }, 300);
     })
+    
     .catch(error => {
         console.error(error);
+        // setTimeout(() => {
+        //     loadingOverlay.style.display = 'none';
+        //     runIntroAnimation();
+        // }, 500);
+
+        // 에러 발생 시에도 동일한 애니메이션 적용
         setTimeout(() => {
-            loadingOverlay.style.display = 'none';
-            runIntroAnimation();
+            anime({
+                targets: loadingOverlay,
+                opacity: 0,
+                duration: 500,
+                easing: 'easeOutQuad',
+                complete: function() {
+                    loadingOverlay.style.display = 'none';
+                    runIntroAnimation();
+                }
+            });
         }, 500);
     });
 
