@@ -1851,22 +1851,22 @@ if (consultationButton) {
             .flatMap(key => [...options[key]]); // Set을 배열로 변환해서 출력
 
         const payload = {
-            content: "📢 **새로운 상담 신청이 접수되었습니다!**\n\n" +
-                     "**📄 상담 신청 정보**\n" +
-                     `👤 이름: ${name}\n` +
-                     `🏢 직책: ${position}\n` +
-                     `📞 연락처: ${phone}\n` +
-                     `✉️ 이메일: ${email}\n` +
-                     `💰 총 견적: **${totalPrice}**\n\n` +
-                     "📌 **선택한 옵션**\n" +
-                     orderedOptions.join("\n") + "\n\n" +
-                     `⏰ 문의 시간: ${new Date().toLocaleString()}`,
-            embeds: []
+            content: "📢 **새로운 상담 신청이 접수되었습니다!**",
+            embeds: [
+                {
+                    title: "📄 상담 신청 정보",
+                    description: `👤 이름: ${name}\n🏢 직책: ${position}\n📞 연락처: ${phone}\n✉️ 이메일: ${email}\n💰 총 견적: **${totalPrice}**`
+                },
+                {
+                    title: "📌 선택한 옵션",
+                    description: orderedOptions.join("\n")
+                }
+            ]
         };
 
         if (notes !== "") {
             payload.embeds.push({
-                title: "📝 추가 전달내용 및 특이사항",
+                title: "📝 추가 전달내용 및 특이사항\n\n\n",
                 description: notes
             });
         }
@@ -1886,6 +1886,13 @@ if (consultationButton) {
             alert("❌ 상담 신청 중 오류가 발생했습니다.");
         });
     });
+
+        // ✅ 터치 시 즉시 실행되도록 `touchstart` 이벤트 추가 (기존 기능 유지)
+    consultationButton.addEventListener("touchstart", (event) => {
+        event.preventDefault(); // 자동으로 발생하는 click 이벤트 방지
+        consultationButton.click(); // 클릭 이벤트 강제 실행
+    }, { passive: false });
+    
 } else {
     console.error("❌ '상담신청' 버튼을 찾을 수 없습니다! ID를 확인해주세요.");
 }
