@@ -1875,7 +1875,7 @@ if (consultationButton) {
                 "실내": 0,
                 "실외": 30000,
                 "항공(드론)": 50000,
-                "일반자막": 30000,
+                "모션효과": 30000,
                 "공간효과": 100000
             };
             return prices[text] ? `${prices[text].toLocaleString()}원` : "0원";
