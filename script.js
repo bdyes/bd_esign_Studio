@@ -30,6 +30,64 @@ let isContactButtonClicked = false; // 플래그 변수 추가
 let isModalOpen = false; // 모달 열림 상태 플래그
 let isDistanceEntered = false; // 이동거리 입력 여부를 저장하는 변수
 let nextQuestionShown = false;
+let lastRunningTimeValue = ""; // 마지막 선택값 저장 변수 추가
+
+// 기존 선택값을 다시 선택해도 버튼이 유지되도록 수정
+function handleRunningTimeChange() {
+    const selectedOption = runningTimeSelect.options[runningTimeSelect.selectedIndex];
+
+    // 선택된 값이 없거나 기본값("(선택해주세요)")이면 동작하지 않음
+    if (!selectedOption.value || selectedOption.value === "") return;
+
+    // 기존 선택값을 다시 선택해도 버튼이 유지되도록 수정
+    runningTimeButton.textContent = selectedOption.text;
+    runningTimeButton.style.display = 'block';
+    runningTimeSelect.style.display = 'none';
+
+    lastRunningTimeValue = selectedOption.value; // 마지막 선택값 업데이트
+}
+
+// 기존 값 선택 시에도 버튼이 다시 표시되도록 클릭 이벤트 추가
+runningTimeSelect.addEventListener('change', function(event) {
+    handleRunningTimeChange();
+    
+    // 기본값으로 돌아가는 문제 방지
+    setTimeout(() => {
+        if (!runningTimeSelect.value || runningTimeSelect.value === "") {
+            runningTimeSelect.value = lastRunningTimeValue;
+        }
+    }, 10);
+});
+
+// 클릭 시 기본값 유지
+runningTimeSelect.addEventListener('click', function() {
+    if (!runningTimeSelect.value || runningTimeSelect.value === "") {
+        runningTimeSelect.value = lastRunningTimeValue;
+    }
+});
+
+// 버튼 클릭 시 다시 선택할 수 있도록 드롭다운 보이게 변경
+runningTimeButton.addEventListener('click', function() {
+    runningTimeSelect.style.display = 'block';
+    runningTimeButton.style.display = 'none';
+
+    // 드롭다운이 다시 열릴 때 기존 선택값 유지
+    setTimeout(() => {
+        runningTimeSelect.value = lastRunningTimeValue;
+        runningTimeSelect.focus();
+    }, 10);
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    startButton.addEventListener('click', handleStartButtonClick);
+    videoFormatButtons.forEach(button => button.addEventListener('click', handleVideoFormatButtonClick));
+    spaceButtons.forEach(button => button.addEventListener('click', handleSpaceButtonClick));
+    equipmentButtons.forEach(button => button.addEventListener('click', handleEquipmentButtonClick));
+    textEffectButtons.forEach(button => button.addEventListener('click', handleTextEffectButtonClick));
+    textEffectNextButton.addEventListener('click', handleTextEffectNextButtonClick);
+    
+    updateContactButtonState();
+});
 
 document.addEventListener("DOMContentLoaded", function () {
   let currentSpeed = 1;
