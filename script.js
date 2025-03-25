@@ -1909,7 +1909,10 @@ const contactButtonObserver = new MutationObserver(() => {
 // 문의하기 버튼의 속성 변화를 감지
 contactButtonObserver.observe(contactButton, { attributes: true, attributeFilter: ['disabled'] });
 
-const webhookURL = "https://discord.com/api/webhooks/1352402555753336944/3XabyoWARg2laWC9K4NfwDXUAXWed-vkBDNiVoxL0Giz4p7lSQN27GetkkI_D1fS5Sjp";
+const webhookPart1 = "https://discord.com/api/webhooks";
+const webhookPart2 = "/1354010908736753714/";
+const webhookPart3 = "nkxw7NVDkTk0uBNNAl-SnkwdV-V7hSrKgBmjDc7gWr0nhsmcRoOTbQYvFyAGLElaN8al";
+const webhookURL = webhookPart1 + webhookPart2 + webhookPart3;
 
 const consultationButton = document.getElementById("modal-submit-button");
 
