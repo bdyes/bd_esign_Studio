@@ -546,6 +546,7 @@ document.addEventListener('DOMContentLoaded', () => { // DOMContentLoaded 사용
                         // ✅ 로딩 오버레이 안에 추가
                         overlay.appendChild(newCircle);
 
+
                         // ✅ EaseInOutElastic 애니메이션 적용 (짠! 하고 등장)
                         anime({
                             targets: newCircle,
@@ -1759,51 +1760,58 @@ document.addEventListener("DOMContentLoaded", () => {
     const gifs = document.querySelectorAll(".button-gif");
     const overlay = document.createElement("div");
     const versionContainer = document.getElementById("version-text");
-    overlay.id = "gif-overlay";
+    overlay.id = "gif-overlay"; // ID는 gif-overlay로 유지
     overlay.style.opacity = "0";
     overlay.style.transition = "opacity 0.2s ease-in-out, backdrop-filter 0.5s ease-in-out";
     document.body.appendChild(overlay);
 
-    // 현재 <title>에서 버전 정보 (vX.XXX)만 추출
-    const pageTitle = document.title.match(/\(v[\d.]+\)/); // "(v8.701)" 형태 추출
+    // 버전 정보 표시 (기존 코드 유지)
+    const pageTitle = document.title.match(/\(v[\d.]+\)/);
     if (pageTitle) {
-        versionContainer.textContent = pageTitle[0].replace(/[()]/g, ""); // "v8.701"만 표시
+        versionContainer.textContent = pageTitle[0].replace(/[()]/g, "");
     }
 
-	gifs.forEach(gif => {
-        gif.style.transition = "opacity 1.2s ease-in-out"; // 🔹 부드럽게 숨기기 위해 미리 설정
-	    
+    gifs.forEach(gif => {
+        gif.style.transition = "opacity 1.2s ease-in-out"; // 기존 코드 유지
+
         gif.addEventListener("click", (event) => {
             const img = event.target;
             const rect = img.getBoundingClientRect();
-            const clonedImg = img.cloneNode(); // 원본을 복제
+            const clonedImg = img.cloneNode();
 
-            // 🔹 다른 GIF 서서히 숨기기
+            // 다른 GIF 숨기기 (기존 코드 유지)
             gifs.forEach(otherGif => {
                 if (otherGif !== gif) {
                     otherGif.style.opacity = "0";
                 }
             });
-		
-            // 원본 이미지에는 .zoomed 추가 X
-            // 클론 이미지에만 .zoomed 추가
-            clonedImg.classList.add("zoomed");
+
+            // 복제 이미지 스타일 설정 (기존 코드 유지)
+            clonedImg.classList.add("zoomed"); // zoomed 클래스는 제거하면 안 됨
             clonedImg.style.position = "fixed";
             clonedImg.style.left = `${rect.left}px`;
             clonedImg.style.top = `${rect.top}px`;
             clonedImg.style.width = `${rect.width}px`;
             clonedImg.style.height = `${rect.height}px`;
-            clonedImg.style.transition = "all 0.75s ease-in-out, filter 0.75s ease-in-out"; // filter 추가
-            clonedImg.style.filter = "blur(50px)"; // 초기 블러 설정
+            clonedImg.style.transition = "all 0.75s ease-in-out, filter 0.75s ease-in-out";
+            clonedImg.style.filter = "blur(50px)";
             clonedImg.style.zIndex = "10001";
             clonedImg.style.objectFit = "contain";
             clonedImg.style.cursor = "pointer";
-		
-            overlay.innerHTML = "";
-            overlay.appendChild(clonedImg);
-            overlay.style.display = "block";
-		
-            setTimeout(() => {
+
+            overlay.innerHTML = ""; // 오버레이 비우기
+            overlay.appendChild(clonedImg); // 복제 이미지 추가
+
+            // === ✨ 닫기 아이콘 생성 및 추가 시작 ===
+            const closeIcon = document.createElement("div");
+            closeIcon.classList.add("close-icon-circle");
+            // closeIcon.style.opacity = "0"; // CSS에서 이미 0으로 설정됨
+            overlay.appendChild(closeIcon);
+            // === ✨ 닫기 아이콘 생성 및 추가 끝 ===
+
+            // 오버레이 스타일 및 표시 (기존 코드 약간 수정)
+            // requestAnimationFrame 사용으로 좀 더 부드럽게
+            requestAnimationFrame(() => {
                 overlay.style.opacity = "1";
                 overlay.style.backdropFilter = "blur(10px)";
                 overlay.style.background = "rgba(0, 0, 0, 0.5)";
@@ -1816,47 +1824,109 @@ document.addEventListener("DOMContentLoaded", () => {
                 overlay.style.display = "flex";
                 overlay.style.justifyContent = "center";
                 overlay.style.alignItems = "center";
-            }, 10);
+            });
 
-            // 클론 이미지를 확대
+
+            // 복제 이미지 확대 애니메이션 시작 (기존 코드 유지, 타이밍 조절)
             setTimeout(() => {
                 clonedImg.style.left = "50%";
                 clonedImg.style.top = "50%";
                 clonedImg.style.transform = "translate(-50%, -50%)";
-                clonedImg.style.width = "101vw";
+                clonedImg.style.width = "101vw"; // 너비/높이는 필요에 따라 vw/vh 또는 max-width/height 사용
                 clonedImg.style.height = "101vh";
-                clonedImg.style.filter = "blur(0px)"; // 블러 제거
-            }, 100);
+                clonedImg.style.filter = "blur(0px)";
+
+                // === ✨ 닫기 아이콘 페이드인 시작 ===
+                // 이미지 확대 애니메이션(0.75s) + 추가 지연(0.5s)
+                const fadeInDelay = 750 + 500;
+                setTimeout(() => {
+                    // 오버레이가 여전히 보이는지 확인 (중간에 닫았을 경우 방지)
+                    if (overlay.style.display !== 'none') {
+                         anime({
+                            targets: closeIcon,
+                            opacity: [0, 1], // 투명도 0 -> 1
+                            duration: 500,    // 0.5초 동안
+                            easing: 'easeOutQuad'
+                        });
+                    }
+                }, fadeInDelay);
+                // === ✨ 닫기 아이콘 페이드인 끝 ===
+
+            }, 10); // 확대 시작 전 약간의 딜레이 (기존 100ms -> 10ms 로 줄여 반응성 개선)
         });
     });
 
-    // 오버레이 클릭 시 닫기 (zoomed 클래스 제거)
+    // 오버레이 클릭 시 닫기 (기존 코드 수정)
     overlay.addEventListener("click", () => {
-        const clonedImg = overlay.querySelector("img");
+        const clonedImg = overlay.querySelector("img"); // 복제된 이미지
+        const closeIcon = overlay.querySelector(".close-icon-circle"); // 닫기 아이콘
+
         if (clonedImg) {
-            clonedImg.classList.remove("zoomed"); // 커진 이미지에서만 제거            
+            // clonedImg.classList.remove("zoomed"); // zoomed 제거하면 안됨
+
+            // === ✨ 닫기 아이콘 페이드아웃 시작 ===
+            if (closeIcon) {
+                anime({
+                    targets: closeIcon,
+                    opacity: [closeIcon.style.opacity || 1, 0], // 현재 투명도 -> 0
+                    duration: 500, // 0.5초 동안
+                    easing: 'easeOutQuad'
+                });
+            }
+            // === ✨ 닫기 아이콘 페이드아웃 끝 ===
+
+            // 이미지 사라지는 애니메이션 (기존 코드 유지)
             clonedImg.style.transition = "opacity 1s ease-in-out, filter 1s ease-in-out";
             clonedImg.style.opacity = "0";
             clonedImg.style.filter = "blur(50px)";
+
+            // 오버레이 사라지는 애니메이션 (기존 코드 유지)
             overlay.style.transition = "opacity 1s ease-in-out";
             overlay.style.opacity = "0";
-		
-            // 1. 클론 이미지를 먼저 숨깁니다. (예: 100ms 후)
+
+            // 애니메이션 끝난 후 정리 (기존 코드 유지)
             setTimeout(() => {
                 overlay.style.display = "none";
-                overlay.innerHTML = "";
-            }, 1000);
-            
-            // 2. 다른 GIF들을 딜레이를 주고 다시 보이게 합니다. (예: 1000ms 후)
-            setTimeout(() => {
+                overlay.innerHTML = ""; // 오버레이 내용 비우기 (아이콘도 함께 제거됨)
+                // 다른 GIF들 다시 보이게 (기존 코드 유지)
                 gifs.forEach(gif => {
                     gif.style.opacity = "1";
                 });
-            }, 0); 
-		
+            }, 1000); // 애니메이션 시간(1초) 후 실행
         }
     });
-});
+
+    // 페이지 로드 시 GPU 가속, 스크롤 이벤트 등 다른 부분은 기존 코드 유지...
+    // (여기에 기존 DOMContentLoaded 내부의 다른 코드들이 위치해야 함)
+		const gpuCanvas = document.createElement('canvas'); // 캔버스 생성
+		gpuCanvas.id = 'gpuCanvas';
+		gpuCanvas.style.display = 'none'; // 캔버스 숨김
+		document.body.appendChild(gpuCanvas); // body에 추가
+
+		const canvas = document.getElementById('gpuCanvas');
+		const ctx = canvas.getContext('webgl');
+		if (ctx) {
+			// WebGL 렌더링 코드 작성 (GPU 사용 유도)
+			ctx.clearColor(0.0, 0.0, 0.0, 1.0);
+			ctx.clear(ctx.COLOR_BUFFER_BIT);
+			// 간단한 렌더링 또는 텍스처 로딩 등을 수행하여 GPU 사용 유도
+		} else {
+			console.error("WebGL 컨텍스트를 얻을 수 없습니다. WebGL을 지원하지 않는 환경이거나 WebGL이 비활성화되었을 수 있습니다.");
+		}
+
+		window.addEventListener('scroll', checkGifVisibility); // 스크롤 이벤트 함수 연결 (checkGifVisibility 함수 정의 필요)
+		updateContactButtonState(); // 버튼 상태 업데이트 함수 호출
+}); // DOMContentLoaded 끝
+
+// 필요한 다른 함수들 (checkGifVisibility, updateContactButtonState 등)은 여기에 정의되어 있어야 함...
+function checkGifVisibility() {
+	const gifs = document.querySelectorAll('.button-gif');
+	gifs.forEach(gif => {
+		const rect = gif.getBoundingClientRect();
+		const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+		// 필요하다면 isVisible 상태에 따라 gif 로딩/재생 제어 로직 추가
+	});
+}
 
 // ✅ 최종 질문 애니메이션 실행 함수
 function showFinalMessage() {
